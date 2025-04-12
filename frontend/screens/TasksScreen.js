@@ -391,4 +391,9 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontWeight: 'bold',
-    fontSize: 16
+    fontSize: 16,
+    color: '#333',
+  }
+});
+
+export default TasksScreen;

@@ -14,13 +14,14 @@ import { ZooContext } from '../contexts/ZooContext';
 
 // Placeholder images for animals
 const animalImages = {
-  'Rabbit': require('../assets/placeholder-rabbit.png'),
-  'Turtle': require('../assets/placeholder-turtle.png'),
-  'Fox': require('../assets/placeholder-fox.png'),
-  'Owl': require('../assets/placeholder-owl.png'),
-  'Lion': require('../assets/placeholder-lion.png'),
-  'Elephant': require('../assets/placeholder-elephant.png'),
+  'Rabbit': require('../assets/8-rabbit-png-image-190242412.png'),
+  'Turtle': require('../assets/purepng.com-turtleshellanimalseaoceanreptileturtletortoise-981524667121fvwwy-498712893.png'),
+  'Fox': require('../assets/purepng.com-foxanimalsfox-9815246712019smh9-1625913908.png'),
+  'Owl': require('../assets/owl-png-eagle-owl-png-transparent-image-950-2742925125.png'),
+  'Lion': require('../assets/lion_PNG23270-175017349.png'),
+  'Elephant': require('../assets/African-Elephant-PNG-File-668663986.png'),
 };
+
 
 const ZooScreen = () => {
   const { animals, coins, unlockAnimal, feedAnimal } = useContext(ZooContext);
@@ -253,3 +254,253 @@ const ZooScreen = () => {
               <TouchableOpacity
                 style={[
                   styles.feedButton,
+                  coins < 5 && styles.disabledButton
+                ]}
+                onPress={() => {
+                  handleFeedAnimal(selectedAnimal);
+                  setAnimalDetailModalVisible(false);
+                }}
+                disabled={coins < 5}
+              >
+                <Text style={styles.feedButtonText}>Feed ({coins >= 5 ? '5 coins' : 'Need 5 coins'})</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      </Modal>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+    padding: 15,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  coinContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  coinText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 5,
+    color: '#333',
+  },
+  infoContainer: {
+    backgroundColor: '#E3F2FD',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  infoText: {
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginVertical: 15,
+  },
+  animalList: {
+    paddingBottom: 15,
+  },
+  animalCard: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 15,
+    marginRight: 15,
+    width: 150,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  lockedAnimalCard: {
+    opacity: 0.7,
+  },
+  animalImageContainer: {
+    position: 'relative',
+    width: 100,
+    height: 100,
+    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  animalImage: {
+    width: '100%',
+    height: '100%',
+  },
+  happinessIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 15,
+    height: 15,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  lockedImageContainer: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  animalName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  happinessBar: {
+    width: '100%',
+    height: 8,
+    backgroundColor: '#f1f1f1',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 5,
+  },
+  happinessBarFill: {
+    height: '100%',
+  },
+  happinessText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  costText: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 10,
+  },
+  unlockButton: {
+    backgroundColor: '#5D8BF4',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+  },
+  disabledButton: {
+    backgroundColor: '#ccc',
+  },
+  unlockButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    color: '#888',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    width: '90%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  closeButton: {
+    padding: 5,
+  },
+  detailAnimalImage: {
+    width: '100%',
+    height: 150,
+    marginBottom: 20,
+  },
+  detailsContainer: {
+    marginBottom: 20,
+  },
+  detailItem: {
+    marginBottom: 15,
+  },
+  detailLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 5,
+  },
+  detailValue: {
+    fontSize: 14,
+    color: '#666',
+  },
+  detailHappinessBar: {
+    width: '100%',
+    height: 10,
+    backgroundColor: '#f1f1f1',
+    borderRadius: 5,
+    overflow: 'hidden',
+    marginBottom: 5,
+  },
+  detailHappinessBarFill: {
+    height: '100%',
+  },
+  feedButton: {
+    backgroundColor: '#5D8BF4',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  feedButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  }
+});
+
+export default ZooScreen;

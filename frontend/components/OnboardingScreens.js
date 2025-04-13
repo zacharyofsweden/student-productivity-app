@@ -19,28 +19,28 @@ const onboardingData = [
     id: '1',
     title: 'Welcome to ZooFocus!',
     description: 'Boost your productivity while building a virtual zoo of adorable animals.',
-    image: require('../assets/welcome.png'), // You'll need to add this image
+    //image: require('../assets/welcome.png'), // You'll need to add this image
     primaryColor: '#5D8BF4',
   },
   {
     id: '2',
     title: 'Manage Your Tasks',
     description: 'Create and organize tasks. Complete them to earn coins for your zoo!',
-    image: require('../assets/tasks.png'), // You'll need to add this image
+    //image: require('../assets/tasks.png'), // You'll need to add this image
     primaryColor: '#FF6B6B',
   },
   {
     id: '3',
     title: 'Stay Focused with Pomodoro',
     description: 'Use the Pomodoro technique to boost your productivity and earn more coins.',
-    image: require('../assets/pomodoro.png'), // You'll need to add this image
+    //image: require('../assets/pomodoro.png'), // You'll need to add this image
     primaryColor: '#4ECDC4',
   },
   {
     id: '4',
     title: 'Build Your Zoo',
     description: 'Spend your hard-earned coins to unlock new animals and take care of them!',
-    image: require('../assets/zoo.png'), // You'll need to add this image
+    //image: require('../assets/zoo.png'), // You'll need to add this image
     primaryColor: '#FFD54F',
   }
 ];

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useRef, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -7,7 +7,10 @@ import {
   TouchableOpacity, 
   Image,
   Modal,
-  Alert
+  Alert,
+  ScrollView,
+  Animated,
+  Dimensions
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ZooContext } from '../contexts/ZooContext';
@@ -22,14 +25,38 @@ const animalImages = {
   'Elephant': require('../assets/African-Elephant-PNG-File-668663986.png'),
 };
 
+// Zoo background elements
+const zooBackgrounds = {
+  'grass': require('../assets/grass-png-grass-png-transparent-image-2962-3243330065.png'),
+  'tree1': require('../assets/tree_PNG224-132609802.png'),
+  'tree2': require('../assets/tree_PNG3494-1355210046.png'),
+ 'pond': require('../assets/31-311661_pond-water-outdoor-free-clipart-pond-png-download-3477901233.png'),
+  'fence': require('../assets/fence_PNG2-2530653697.png'),
+};
 
+const screenWidth = Dimensions.get('window').width;
 const ZooScreen = () => {
   const { animals, coins, unlockAnimal, feedAnimal } = useContext(ZooContext);
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [animalDetailModalVisible, setAnimalDetailModalVisible] = useState(false);
-
+  const [newlyAddedAnimalId, setNewlyAddedAnimalId] = useState(null);
+  
+  // Animation values
+  const newAnimalScale = useRef(new Animated.Value(0)).current;
+  const newAnimalOpacity = useRef(new Animated.Value(0)).current;
+  
   const unlockedAnimals = animals.filter(animal => animal.unlocked);
   const lockedAnimals = animals.filter(animal => !animal.unlocked);
+
+  // Predefined positions for animals in the zoo area
+  const animalPositions = {
+    0: { top: 30, left: 40, zIndex: 2 },       // Rabbit position
+    1: { top: 120, left: 200, zIndex: 1 },     // Turtle position
+    2: { top: 80, left: 140, zIndex: 3 },      // Fox position
+    3: { top: 20, left: 260, zIndex: 2 },      // Owl position
+    4: { top: 140, left: 80, zIndex: 4 },      // Lion position 
+    5: { top: 100, left: 220, zIndex: 5 }      // Elephant position
+  };
 
   // Get happiness color based on happiness level
   const getHappinessColor = (happiness) => {
@@ -43,6 +70,31 @@ const ZooScreen = () => {
     if (coins >= animal.cost) {
       const success = unlockAnimal(animal.id);
       if (success) {
+        setNewlyAddedAnimalId(animal.id);
+        
+        // Start animation
+        newAnimalScale.setValue(0);
+        newAnimalOpacity.setValue(0);
+        
+        Animated.parallel([
+          Animated.spring(newAnimalScale, {
+            toValue: 1,
+            friction: 5,
+            tension: 40,
+            useNativeDriver: true
+          }),
+          Animated.timing(newAnimalOpacity, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true
+          })
+        ]).start();
+        
+        // Clear the newly added animal id after animation
+        setTimeout(() => {
+          setNewlyAddedAnimalId(null);
+        }, 3000);
+        
         Alert.alert(
           'Animal Unlocked!',
           `You've unlocked a ${animal.name} for your zoo!`,
@@ -84,40 +136,7 @@ const ZooScreen = () => {
     setAnimalDetailModalVisible(true);
   };
 
-  // Render an unlocked animal item
-  const renderUnlockedAnimalItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.animalCard}
-      onPress={() => viewAnimalDetails(item)}
-    >
-      <View style={styles.animalImageContainer}>
-        <Image 
-          source={animalImages[item.name]} 
-          style={styles.animalImage}
-          resizeMode="contain"
-        />
-        <View style={[
-          styles.happinessIndicator, 
-          { backgroundColor: getHappinessColor(item.happiness) }
-        ]} />
-      </View>
-      <Text style={styles.animalName}>{item.name}</Text>
-      <View style={styles.happinessBar}>
-        <View 
-          style={[
-            styles.happinessBarFill, 
-            { 
-              width: `${item.happiness}%`,
-              backgroundColor: getHappinessColor(item.happiness)
-            }
-          ]} 
-        />
-      </View>
-      <Text style={styles.happinessText}>{`Happiness: ${item.happiness}%`}</Text>
-    </TouchableOpacity>
-  );
-
-  // Render a locked animal item
+  // Render a locked animal item for the shop
   const renderLockedAnimalItem = ({ item }) => (
     <View style={[styles.animalCard, styles.lockedAnimalCard]}>
       <View style={styles.lockedImageContainer}>
@@ -138,10 +157,89 @@ const ZooScreen = () => {
     </View>
   );
 
+  // Render the zoo area with all unlocked animals
+  const renderZooArea = () => {
+    return (
+      <View style={styles.zooAreaContainer}>
+        {/* Zoo background elements */}
+        <Image source={zooBackgrounds.grass} style={styles.zooBackground} resizeMode="repeat" />
+        <Image source={zooBackgrounds.tree1} style={styles.zooTree1} resizeMode="contain" />
+        <Image source={zooBackgrounds.tree2} style={styles.zooTree2} resizeMode="contain" />
+        <Image source={zooBackgrounds.pond} style={styles.zooPond} resizeMode="contain" />
+        <Image source={zooBackgrounds.fence} style={styles.zooFence} resizeMode="stretch" />
+        
+        {/* Render each unlocked animal */}
+        {unlockedAnimals.map((animal, index) => {
+          const position = animalPositions[animals.findIndex(a => a.id === animal.id)] || 
+                          { top: 30 + (index * 40), left: 50 + (index * 30), zIndex: 1 };
+          
+          const isNewlyAdded = animal.id === newlyAddedAnimalId;
+          
+          // If this is a newly added animal, apply animation
+          if (isNewlyAdded) {
+            return (
+              <Animated.View 
+                key={animal.id}
+                style={[
+                  styles.zooAnimalContainer,
+                  position,
+                  {
+                    transform: [{ scale: newAnimalScale }],
+                    opacity: newAnimalOpacity
+                  }
+                ]}
+              >
+                <TouchableOpacity onPress={() => viewAnimalDetails(animal)}>
+                  <Image 
+                    source={animalImages[animal.name]} 
+                    style={styles.zooAnimalImage}
+                    resizeMode="contain"
+                  />
+                  <View style={[
+                    styles.zooHappinessIndicator, 
+                    { backgroundColor: getHappinessColor(animal.happiness) }
+                  ]} />
+                </TouchableOpacity>
+              </Animated.View>
+            );
+          } else {
+            // Regular render for already unlocked animals
+            return (
+              <View 
+                key={animal.id}
+                style={[styles.zooAnimalContainer, position]}
+              >
+                <TouchableOpacity onPress={() => viewAnimalDetails(animal)}>
+                  <Image 
+                    source={animalImages[animal.name]} 
+                    style={styles.zooAnimalImage}
+                    resizeMode="contain"
+                  />
+                  <View style={[
+                    styles.zooHappinessIndicator, 
+                    { backgroundColor: getHappinessColor(animal.happiness) }
+                  ]} />
+                </TouchableOpacity>
+              </View>
+            );
+          }
+        })}
+        
+        {/* Empty zoo message if no animals */}
+        {unlockedAnimals.length === 0 && (
+          <View style={styles.emptyZooMessage}>
+            <Ionicons name="paw" size={40} color="#ccc" />
+            <Text style={styles.emptyZooText}>Your zoo is empty! Unlock animals below.</Text>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Your Zoo</Text>
+        <Text style={styles.title}>My Zoo Sanctuary</Text>
         <View style={styles.coinContainer}>
           <Ionicons name="cash-outline" size={20} color="#FFD700" />
           <Text style={styles.coinText}>{coins}</Text>
@@ -155,43 +253,69 @@ const ZooScreen = () => {
         </Text>
       </View>
       
-      {unlockedAnimals.length > 0 ? (
-        <>
-          <Text style={styles.sectionTitle}>Your Animals</Text>
-          <FlatList
-            data={unlockedAnimals}
-            renderItem={renderUnlockedAnimalItem}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.animalList}
-          />
-        </>
+      {/* Zoo area */}
+      {renderZooArea()}
+      
+      {/* Animal collection list */}
+      <View style={styles.collectionContainer}>
+        <Text style={styles.sectionTitle}>
+          <Ionicons name="paw" size={18} color="#5D8BF4" /> Your Collection ({unlockedAnimals.length}/{animals.length})
+        </Text>
+        <FlatList
+          data={unlockedAnimals}
+          renderItem={({ item }) => (
+            <TouchableOpacity 
+              style={styles.collectionItem}
+              onPress={() => viewAnimalDetails(item)}
+            >
+              <Image 
+                source={animalImages[item.name]} 
+                style={styles.collectionImage}
+                resizeMode="contain"
+              />
+              <View style={styles.collectionInfo}>
+                <Text style={styles.collectionName}>{item.name}</Text>
+                <View style={styles.happinessBar}>
+                  <View 
+                    style={[
+                      styles.happinessBarFill, 
+                      { 
+                        width: `${item.happiness}%`,
+                        backgroundColor: getHappinessColor(item.happiness)
+                      }
+                    ]} 
+                  />
+                </View>
+              </View>
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.collectionList}
+        />
+      </View>
+
+      {/* Animal shop */}
+      <Text style={styles.sectionTitle}>
+        <Ionicons name="cart" size={18} color="#5D8BF4" /> Animal Shop
+      </Text>
+      {lockedAnimals.length > 0 ? (
+        <FlatList
+          data={lockedAnimals}
+          renderItem={renderLockedAnimalItem}
+          keyExtractor={(item) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.animalList}
+        />
       ) : (
         <View style={styles.emptyContainer}>
-          <Ionicons name="paw" size={60} color="#ccc" />
           <Text style={styles.emptyText}>
-            No animals yet! Unlock your first animal below.
+            Great job! You've unlocked all available animals.
           </Text>
         </View>
       )}
-
-      <Text style={styles.sectionTitle}>Available Animals</Text>
-      <FlatList
-        data={lockedAnimals}
-        renderItem={renderLockedAnimalItem}
-        keyExtractor={(item) => item.id}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.animalList}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              Great job! You've unlocked all available animals.
-            </Text>
-          </View>
-        }
-      />
 
       {/* Animal Detail Modal */}
       <Modal
@@ -249,6 +373,13 @@ const ZooScreen = () => {
                       : 'Never'}
                   </Text>
                 </View>
+                
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailLabel}>Animal Info:</Text>
+                  <Text style={styles.detailDescription}>
+                    {getAnimalDescription(selectedAnimal.name)}
+                  </Text>
+                </View>
               </View>
               
               <TouchableOpacity
@@ -262,27 +393,43 @@ const ZooScreen = () => {
                 }}
                 disabled={coins < 5}
               >
+                <Ionicons name="fast-food-outline" size={20} color="white" style={{marginRight: 6}} />
                 <Text style={styles.feedButtonText}>Feed ({coins >= 5 ? '5 coins' : 'Need 5 coins'})</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
       </Modal>
-    </View>
+    </ScrollView>
   );
+};
+
+// Helper function to get animal descriptions
+const getAnimalDescription = (animalName) => {
+  const descriptions = {
+    'Rabbit': 'A quick and fluffy friend who loves carrots. Feeding it will make it hop with joy!',
+    'Turtle': 'A slow but steady companion. It enjoys leafy greens and basking in the sun.',
+    'Fox': 'A clever and curious animal with a beautiful coat. It likes to play and explore.',
+    'Owl': 'A wise night bird with excellent hunting skills. Keep it happy with regular feeding.',
+    'Lion': 'The king of the zoo! Majestic and powerful, it enjoys meat and afternoon naps.',
+    'Elephant': 'The gentle giant of your zoo with a great memory. It loves fruits and taking baths!',
+  };
+  
+  return descriptions[animalName] || 'A wonderful animal for your zoo!';
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 15,
+    backgroundColor: '#f7f9fc',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    paddingHorizontal: 15,
+    paddingTop: 15,
+    paddingBottom: 10,
   },
   title: {
     fontSize: 24,
@@ -311,6 +458,7 @@ const styles = StyleSheet.create({
   infoContainer: {
     backgroundColor: '#E3F2FD',
     padding: 15,
+    marginHorizontal: 15,
     borderRadius: 10,
     marginBottom: 15,
   },
@@ -319,44 +467,61 @@ const styles = StyleSheet.create({
     color: '#333',
     lineHeight: 20,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+  // Zoo area styles
+  zooAreaContainer: {
+    height: 300,
+    marginHorizontal: 15,
     marginVertical: 15,
-  },
-  animalList: {
-    paddingBottom: 15,
-  },
-  animalCard: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 15,
-    marginRight: 15,
-    width: 150,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  lockedAnimalCard: {
-    opacity: 0.7,
-  },
-  animalImageContainer: {
+    backgroundColor: '#D7F5D3',
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: '#A3D39C',
+    overflow: 'hidden',
     position: 'relative',
-    width: 100,
-    height: 100,
-    marginBottom: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  animalImage: {
+  zooBackground: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0.6,
+  },
+  zooTree1: {
+    position: 'absolute',
+    width: 80,
+    height: 100,
+    top: 10,
+    left: 10,
+  },
+  zooTree2: {
+    position: 'absolute',
+    width: 70,
+    height: 90,
+    bottom: 20,
+    right: 20,
+  },
+  zooPond: {
+    position: 'absolute',
+    width: 100,
+    height: 60,
+    bottom: 30,
+    left: 50,
+  },
+  zooFence: {
+    position: 'absolute',
+    width: '100%',
+    height: 30,
+    bottom: 0,
+  },
+  zooAnimalContainer: {
+    position: 'absolute',
+    width: 70,
+    height: 70,
+  },
+  zooAnimalImage: {
     width: '100%',
     height: '100%',
   },
-  happinessIndicator: {
+  zooHappinessIndicator: {
     position: 'absolute',
     bottom: 0,
     right: 0,
@@ -366,11 +531,91 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'white',
   },
+  emptyZooMessage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+  },
+  emptyZooText: {
+    color: '#888',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 10,
+    padding: 20,
+  },
+  // Collection styles
+  collectionContainer: {
+    marginBottom: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginVertical: 10,
+    marginHorizontal: 15,
+  },
+  collectionList: {
+    paddingHorizontal: 10,
+  },
+  collectionItem: {
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 10,
+    marginHorizontal: 5,
+    width: 170,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  collectionImage: {
+    width: 50,
+    height: 50,
+    marginRight: 10,
+  },
+  collectionInfo: {
+    flex: 1,
+  },
+  collectionName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  // Shop styles
+  animalList: {
+    paddingHorizontal: 10,
+    paddingBottom: 20,
+  },
+  animalCard: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 15,
+    marginHorizontal: 5,
+    width: 150,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  lockedAnimalCard: {
+    opacity: 0.9,
+  },
   lockedImageContainer: {
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
     backgroundColor: '#f5f5f5',
-    borderRadius: 50,
+    borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
@@ -391,10 +636,6 @@ const styles = StyleSheet.create({
   },
   happinessBarFill: {
     height: '100%',
-  },
-  happinessText: {
-    fontSize: 12,
-    color: '#666',
   },
   costText: {
     fontSize: 14,
@@ -426,6 +667,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
   },
+  // Modal styles
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -479,6 +721,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
+  detailDescription: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+  },
   detailHappinessBar: {
     width: '100%',
     height: 10,
@@ -495,12 +742,14 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   feedButtonText: {
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
-  }
+  },
 });
 
 export default ZooScreen;

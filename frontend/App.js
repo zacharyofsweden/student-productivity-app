@@ -1,14 +1,12 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 
-// Import contexts
 import { TaskProvider } from './contexts/TaskContext';
 import { ZooProvider } from './contexts/ZooContext';
 
-// Import navigation
-import AppNavigator from './navigation/AppNavigator';
+import AppRouter from './navigation/AppRouter'; // 👈 NEW
 
 export default function App() {
   return (
@@ -16,7 +14,7 @@ export default function App() {
       <TaskProvider>
         <ZooProvider>
           <NavigationContainer>
-            <AppNavigator />
+            <AppRouter />
             <StatusBar style="auto" />
           </NavigationContainer>
         </ZooProvider>

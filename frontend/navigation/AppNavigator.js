@@ -7,6 +7,8 @@ import HomeScreen from '../screens/HomeScreen';
 import TasksScreen from '../screens/TasksScreen';
 import PomodoroScreen from '../screens/PomodoroScreen';
 import ZooScreen from '../screens/ZooScreen';
+import HelpScreen from '../screens/HelpScreen'; 
+
 
 const Tab = createBottomTabNavigator();
 
@@ -37,6 +39,7 @@ const AppNavigator = () => {
       <Tab.Screen name="Tasks" component={TasksScreen} />
       <Tab.Screen name="Pomodoro" component={PomodoroScreen} />
       <Tab.Screen name="Zoo" component={ZooScreen} />
+      <Tab.Screen name="Help" component={HelpScreen} />
     </Tab.Navigator>
   );
 };

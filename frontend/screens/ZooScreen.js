@@ -514,12 +514,15 @@ const styles = StyleSheet.create({
   },
   zooAnimalContainer: {
     position: 'absolute',
-    width: 70,
-    height: 70,
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   zooAnimalImage: {
-    width: '100%',
-    height: '100%',
+    width: 60,
+    height: 60,
+    resizeMode: 'contain',
   },
   zooHappinessIndicator: {
     position: 'absolute',
@@ -577,9 +580,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   collectionImage: {
-    width: 50,
-    height: 50,
+    width: 60,
+    height: 60,
     marginRight: 10,
+    resizeMode: 'contain',
   },
   collectionInfo: {
     flex: 1,
@@ -701,8 +705,10 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   detailAnimalImage: {
-    width: '100%',
-    height: 150,
+    width: 120,
+    height: 120,
+    alignSelf: 'center',
+    resizeMode: 'contain',
     marginBottom: 20,
   },
   detailsContainer: {

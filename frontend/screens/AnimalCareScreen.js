@@ -18,12 +18,12 @@ import { personalityDialog, personalityEmojis } from '../utils/zooHelpers';
 const { width, height } = Dimensions.get('window');
 
 const animalImages = {
-  'Rabbit': require('../assets/8-rabbit-png-image-190242412.png'),
-  'Turtle': require('../assets/purepng.com-turtleshellanimalseaoceanreptileturtletortoise-981524667121fvwwy-498712893.png'),
-  'Fox': require('../assets/purepng.com-foxanimalsfox-9815246712019smh9-1625913908.png'),
-  'Owl': require('../assets/owl-png-eagle-owl-png-transparent-image-950-2742925125.png'),
-  'Lion': require('../assets/lion_PNG23270-175017349.png'),
-  'Elephant': require('../assets/African-Elephant-PNG-File-668663986.png'),
+  'Rabbit': require('../screens/assets/rabbit.png'),
+  'Turtle': require('../screens/assets/turtle.png'),
+  'Fox': require('../screens/assets/fox.png'),
+  'Owl': require('../screens/assets/owl.png'),
+  'Lion': require('../screens/assets/lion.png'),
+  'Elephant': require('../screens/assets/Elephant.png'),
 };
 
 const AnimalCareScreen = ({ route }) => {
@@ -105,10 +105,10 @@ const AnimalCareScreen = ({ route }) => {
     petAnimal(animal.id);
   };
 
-  if (!animal) {
+  if (!animal || !animal.stats || !animal.personality) {
     return (
       <View style={styles.container}>
-        <Text>Animal not found!</Text>
+        <Text>Loading animal data...</Text>
       </View>
     );
   }
@@ -183,7 +183,7 @@ const AnimalCareScreen = ({ route }) => {
       <Text>Fed: {getTimeSince(animal.lastFed)}</Text>
       <Text>Cleaned: {getTimeSince(animal.lastCleaned)}</Text>
       <Text>Played: {getTimeSince(animal.lastPlayed)}</Text>
-      <Text>Rested: {getTimeSince(animal.lastRested)}</Text>
+      <Text>Rested: {getTimeSince(animal.lastSlept)}</Text>
 
       <Text style={styles.sectionTitle}>Actions</Text>
       <View style={styles.actionsRow}>

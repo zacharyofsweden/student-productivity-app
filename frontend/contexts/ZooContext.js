@@ -183,7 +183,20 @@ export const ZooProvider = ({ children }) => {
         const storedCoins = await AsyncStorage.getItem('coins');
         
         if (storedAnimals) {
-          setAnimals(JSON.parse(storedAnimals));
+          const parsed = JSON.parse(storedAnimals);
+          const merged = availableAnimals.map(base => {
+            const saved = parsed.find(p => p.id === base.id);
+            return saved
+              ? {
+                  ...base,
+                  ...saved,
+                  stats: { ...base.stats, ...saved.stats },
+                  personality: saved.personality || getRandomPersonality(),
+                  mood: saved.mood || 'happy',
+                }
+              : base;
+          });
+          setAnimals(merged);
         } else {
           setAnimals(availableAnimals);
         }
@@ -395,19 +408,7 @@ export const ZooProvider = ({ children }) => {
     return true;
   };
 
-  // Update animal mood based on stats
-  const updateAnimalMood = (animal) => {
-    const { hunger, energy, happiness, hygiene, health } = animal.stats;
-    
-    if (hunger < 20) return 'hungry';
-    if (energy < 20) return 'sad';
-    if (happiness < 30) return 'sad';
-    if (hygiene < 30) return 'angry';
-    if (health < 30) return 'sad';
-    if (happiness > 80 && hunger > 80) return 'happy';
-    return 'innocent';
-  };
-
+  
   // Update animal stats and age over time
   useEffect(() => {
     const interval = setInterval(() => {
@@ -415,8 +416,7 @@ export const ZooProvider = ({ children }) => {
         animals.map(animal => {
           if (animal.unlocked) {
             const now = new Date();
-            
-            // Check time since last interaction
+            const newStats = { ...animal.stats };             // Check time since last interaction
             const lastInteraction = animal.lastInteraction ? new Date(animal.lastInteraction) : null;
             const hoursSinceInteraction = lastInteraction 
               ? (now   - lastInteraction) / (1000 * 60 * 60) 
@@ -513,8 +513,7 @@ export const ZooProvider = ({ children }) => {
             const newLevel = Math.max(1, Math.floor(newAge / 5) + Math.floor(avgStats / 20));
             
             // Update mood based on stats
-            const newMood = updateAnimalMood({ ...animal, stats: newStats });
-            
+            const newMood = updateAnimalMood({ stats: newStats });            
             return { 
               ...animal,
               stats: newStats,

@@ -17,21 +17,21 @@ import { ZooContext } from '../contexts/ZooContext';
 
 // Placeholder images for animals
 const animalImages = {
-  'Rabbit': require('../assets/8-rabbit-png-image-190242412.png'),
-  'Turtle': require('../assets/purepng.com-turtleshellanimalseaoceanreptileturtletortoise-981524667121fvwwy-498712893.png'),
-  'Fox': require('../assets/purepng.com-foxanimalsfox-9815246712019smh9-1625913908.png'),
-  'Owl': require('../assets/owl-png-eagle-owl-png-transparent-image-950-2742925125.png'),
-  'Lion': require('../assets/lion_PNG23270-175017349.png'),
-  'Elephant': require('../assets/African-Elephant-PNG-File-668663986.png'),
+  'Rabbit': require('../assets/Rabbit.png'),
+  'Turtle': require('../assets/turtle.png'),
+  'Fox': require('../assets/fox.png'),
+  'Owl': require('../assets/owl.png'),
+  'Lion': require('../assets/lion.png'),
+  'Elephant': require('../assets/Elephant.png'),
 };
 
 // Zoo background elements
 const zooBackgrounds = {
-  'grass': require('../assets/grass-png-grass-png-transparent-image-2962-3243330065.png'),
-  'tree1': require('../assets/tree_PNG224-132609802.png'),
-  'tree2': require('../assets/tree_PNG3494-1355210046.png'),
- 'pond': require('../assets/31-311661_pond-water-outdoor-free-clipart-pond-png-download-3477901233.png'),
-  'fence': require('../assets/fence_PNG2-2530653697.png'),
+  'grass': require('../assets/grass.png'),
+  'tree1': require('../assets/Tree1.png'),
+  'tree2': require('../assets/tree2.png'),
+ 'pond': require('../assets/pond.png'),
+  'fence': require('../assets/fence.png'),
 };
 
 const screenWidth = Dimensions.get('window').width;

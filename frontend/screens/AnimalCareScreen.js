@@ -13,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ZooContext } from '../contexts/ZooContext';
+import { personalityDialog, personalityEmojis } from '../utils/zooHelpers';
 
 const { width, height } = Dimensions.get('window');
 
@@ -58,6 +59,18 @@ const AnimalCareScreen = ({ route }) => {
     if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
     const diffDays = Math.floor(diffHours / 24);
     return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+  };
+
+  const getCountdown = (endTime) => {
+    const now = new Date();
+    const end = new Date(endTime);
+    const diff = end - now;
+
+    if (diff <= 0) return 'Done';
+
+    const mins = Math.floor((diff / 1000 / 60) % 60);
+    const hours = Math.floor(diff / 1000 / 60 / 60);
+    return hours > 0 ? `${hours}h ${mins}m` : `${mins} min`;
   };
 
   const handleFeed = () => {
@@ -107,6 +120,12 @@ const AnimalCareScreen = ({ route }) => {
         <View style={styles.levelBadge}>
           <Text style={styles.levelText}>Level {animal.level}</Text>
         </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 5 }}>
+          <Text style={{ fontSize: 16, fontWeight: '500' }}>Personality: </Text>
+          <Text style={{ fontSize: 18 }}>
+            {animal.personality} {personalityEmojis[animal.personality]}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.coinContainer}>
@@ -147,6 +166,18 @@ const AnimalCareScreen = ({ route }) => {
         </View>
         <Text>{animal.stats.happiness}%</Text>
       </View>
+
+      <Text style={{ fontSize: 16, marginTop: 10 }}>
+        Status: {animal.status} {animal.animation === 'zzz' ? '💤' : animal.animation === 'sitting' ? '🪑' : ''}
+      </Text>
+      {animal.statusEndTime && (
+        <Text style={{ fontSize: 14, color: '#666' }}>
+          Ends in: {getCountdown(animal.statusEndTime)}
+        </Text>
+      )}
+      <Text style={{ fontStyle: 'italic', fontSize: 14, marginTop: 6 }}>
+        {personalityDialog[animal.personality]?.[animal.status] || "Just hanging out..."}
+      </Text>
 
       <Text style={styles.sectionTitle}>Last Activity</Text>
       <Text>Fed: {getTimeSince(animal.lastFed)}</Text>

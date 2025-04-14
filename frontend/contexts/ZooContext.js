@@ -1,8 +1,15 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TaskContext } from './TaskContext';
-
+import {
+  personalityDialog,
+  getRandomPersonality,
+  getPersonalityEffects,
+  getPetHappinessBoost,
+  updateAnimalMood,
+} from '../utils/zooHelpers';
 export const ZooContext = createContext();
+
 
 export const ZooProvider = ({ children }) => {
   const [animals, setAnimals] = useState([]);
@@ -30,6 +37,11 @@ export const ZooProvider = ({ children }) => {
       lastPlayed: null,
       lastCleaned: null,
       lastSlept: null,
+      personality: '',        // new
+      animation: 'idle',      // new
+      status: 'idle',         // new
+      statusStartTime: null,  // new
+      statusEndTime: null,    // new
       mood: 'happy',      // Current mood/animation state
       level: 1,           // Level increases with age and care
     },
@@ -51,6 +63,11 @@ export const ZooProvider = ({ children }) => {
       lastPlayed: null,
       lastCleaned: null,
       lastSlept: null,
+      personality: '',        // new
+      animation: 'idle',      // new
+      status: 'idle',         // new
+      statusStartTime: null,  // new
+      statusEndTime: null,    // new
       mood: 'happy',
       level: 1,
     },
@@ -66,7 +83,11 @@ export const ZooProvider = ({ children }) => {
         hygiene: 100,
         health: 100,
       },
-      age: 0,
+      age: 0,personality: '',        // new
+      animation: 'idle',      // new
+      status: 'idle',         // new
+      statusStartTime: null,  // new
+      statusEndTime: null,    // new
       lastInteraction: null,
       lastFed: null,
       lastPlayed: null,
@@ -90,6 +111,11 @@ export const ZooProvider = ({ children }) => {
       age: 0,
       lastInteraction: null,
       lastFed: null,
+      personality: '',        // new
+      animation: 'idle',      // new
+      status: 'idle',         // new
+      statusStartTime: null,  // new
+      statusEndTime: null,    // new
       lastPlayed: null,
       lastCleaned: null,
       lastSlept: null,
@@ -112,6 +138,11 @@ export const ZooProvider = ({ children }) => {
       lastInteraction: null,
       lastFed: null,
       lastPlayed: null,
+      personality: '',        // new
+      animation: 'idle',      // new
+      status: 'idle',         // new
+      statusStartTime: null,  // new
+      statusEndTime: null,    // new
       lastCleaned: null,
       lastSlept: null,
       mood: 'happy',
@@ -134,7 +165,11 @@ export const ZooProvider = ({ children }) => {
       lastFed: null,
       lastPlayed: null,
       lastCleaned: null,
-      lastSlept: null,
+      lastSlept: null,personality: '',        // new
+      animation: 'idle',      // new
+      status: 'idle',         // new
+      statusStartTime: null,  // new
+      statusEndTime: null,    // new
       mood: 'happy',
       level: 1,
     },
@@ -211,6 +246,7 @@ export const ZooProvider = ({ children }) => {
                 lastPlayed: new Date().toISOString(),
                 lastCleaned: new Date().toISOString(),
                 lastSlept: new Date().toISOString(),
+                personality: getRandomPersonality(),
               } 
             : a
         )
@@ -248,29 +284,39 @@ export const ZooProvider = ({ children }) => {
 
   // Play with an animal
   const playWithAnimal = (animalId) => {
-    if (coins >= 3) {
-      setCoins(prevCoins => prevCoins - 3);
-      setAnimals(
-        animals.map(a =>
-          a.id === animalId
-            ? { 
-                ...a, 
-                stats: {
-                  ...a.stats,
-                  happiness: Math.min(a.stats.happiness + 30, 100),
-                  energy: Math.max(a.stats.energy - 10, 0),
-                  hunger: Math.max(a.stats.hunger - 10, 0),
-                },
-                lastPlayed: new Date().toISOString(),
-                lastInteraction: new Date().toISOString(),
-                mood: 'curious'
-              }
-            : a
-        )
-      );
-      return true;
-    }
-    return false;
+    const animal = animals.find(a => a.id === animalId);
+    if (!animal || coins < 3) return false;
+
+    const effect = {
+      Playful: { happiness: 30, energy: -10 },
+      Shy: { happiness: 15, energy: -5 },
+      Lazy: { happiness: 10, energy: -20 },
+      Energetic: { happiness: 25, energy: -15 },
+      Curious: { happiness: 20, energy: -10 },
+      Grumpy: { happiness: 10, energy: -10 },
+      Friendly: { happiness: 25, energy: -10 },
+    }[animal.personality] || { happiness: 20, energy: -10 };
+
+    setCoins(prevCoins => prevCoins - 3);
+    setAnimals(
+      animals.map(a =>
+        a.id === animalId
+          ? {
+              ...a,
+              stats: {
+                ...a.stats,
+                happiness: Math.min(a.stats.happiness + effect.happiness, 100),
+                energy: Math.max(a.stats.energy + effect.energy, 0),
+                hunger: Math.max(a.stats.hunger - 10, 0),
+              },
+              lastPlayed: new Date().toISOString(),
+              lastInteraction: new Date().toISOString(),
+              mood: 'curious'
+            }
+          : a
+      )
+    );
+    return true;
   };
 
   // Clean an animal
@@ -330,7 +376,15 @@ export const ZooProvider = ({ children }) => {
               ...a, 
               stats: {
                 ...a.stats,
-                happiness: Math.min(a.stats.happiness + 15, 100),
+                happiness: Math.min(a.stats.happiness + ( {
+                  Playful: 20,
+                  Shy: 10,
+                  Lazy: 15,
+                  Energetic: 15,
+                  Curious: 15,
+                  Grumpy: 5,
+                  Friendly: 25,
+                }[a.personality] || 15), 100),
               },
               lastInteraction: new Date().toISOString(),
               mood: 'cute'
@@ -365,12 +419,61 @@ export const ZooProvider = ({ children }) => {
             // Check time since last interaction
             const lastInteraction = animal.lastInteraction ? new Date(animal.lastInteraction) : null;
             const hoursSinceInteraction = lastInteraction 
-              ? (now - lastInteraction) / (1000 * 60 * 60) 
+              ? (now   - lastInteraction) / (1000 * 60 * 60) 
               : 24;
             
             // Decrease stats based on time
-            let newStats = { ...animal.stats };
-            
+            // Set time-based behavior
+            const hour = now.getHours();
+            let sleepStart = 22;
+            let sleepEnd = 6;
+            let playStart = 8;
+            let playEnd = 18;
+
+            switch (animal.personality) {
+              case 'Lazy':
+                sleepStart = 21;
+                sleepEnd = 9;
+                break;
+              case 'Energetic':
+                sleepStart = 23;
+                sleepEnd = 5;
+                playEnd = 20;
+                break;
+              case 'Shy':
+                playStart = 10;
+                playEnd = 16;
+                break;
+              case 'Playful':
+                playStart = 6;
+                playEnd = 22;
+                break;
+              case 'Grumpy':
+                sleepStart = 20;
+                sleepEnd = 7;
+                playStart = 12;
+                playEnd = 17;
+                break;
+            }
+
+            let status = animal.status;
+            let animation = animal.animation;
+            let statusStartTime = animal.statusStartTime;
+            let statusEndTime = animal.statusEndTime;
+            const sleepDuration = animal.personality === 'Lazy' ? 600 : 480; // in minutes
+
+            // Apply time-based status
+            if ((hour >= sleepStart || hour < sleepEnd) && animal.status !== 'sleeping') {
+              status = 'sleeping';
+              animation = 'zzz';
+              statusStartTime = now.toISOString();
+              statusEndTime = new Date(now.getTime() + sleepDuration * 60 * 1000).toISOString();
+            } else if (hour >= playStart && hour < playEnd && animal.status !== 'playing') {
+              status = 'playing';
+              animation = 'playing';
+              statusStartTime = now.toISOString();
+              statusEndTime = new Date(now.getTime() + 30 * 60 * 1000).toISOString();
+            }            
             // Decrease hunger over time
             if (hoursSinceInteraction > 2) {
               newStats.hunger = Math.max(0, newStats.hunger - 5);
@@ -413,11 +516,15 @@ export const ZooProvider = ({ children }) => {
             const newMood = updateAnimalMood({ ...animal, stats: newStats });
             
             return { 
-              ...animal, 
+              ...animal,
               stats: newStats,
               age: newAge,
               level: newLevel,
-              mood: newMood
+              mood: newMood,
+              status,
+              animation,
+              statusStartTime,
+              statusEndTime
             };
           }
           return animal;

@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TaskContext } from '../contexts/TaskContext';
 import { ZooContext } from '../contexts/ZooContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -143,6 +144,23 @@ const HomeScreen = () => {
           7. Take care of your animals to keep them happy
         </Text>
       </View>
+
+      <TouchableOpacity
+        onPress={async () => {
+          await AsyncStorage.clear();
+          console.log('AsyncStorage cleared!');
+          Alert.alert('Storage Cleared', 'Restart the app to see changes.');
+        }}
+        style={{
+          backgroundColor: '#F44336',
+          padding: 12,
+          margin: 20,
+          borderRadius: 10,
+          alignItems: 'center',
+        }}
+      >
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>Reset Zoo Storage</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };

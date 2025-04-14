@@ -14,29 +14,23 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ZooContext } from '../contexts/ZooContext';
+import { personalityEmojis } from '../utils/zooHelpers';
+import { animalImages } from '../assets/animalAssets';
+import { zooBackgrounds } from '../assets/zooAssets';
 
-// Placeholder images for animals
-const animalImages = {
-  'Rabbit': require('../assets/Rabbit.png'),
-  'Turtle': require('../assets/turtle.png'),
-  'Fox': require('../assets/fox.png'),
-  'Owl': require('../assets/owl.png'),
-  'Lion': require('../assets/lion.png'),
-  'Elephant': require('../assets/Elephant.png'),
-};
-
-// Zoo background elements
-const zooBackgrounds = {
-  'grass': require('../assets/grass.png'),
-  'tree1': require('../assets/Tree1.png'),
-  'tree2': require('../assets/tree2.png'),
- 'pond': require('../assets/pond.png'),
-  'fence': require('../assets/fence.png'),
-};
 
 const screenWidth = Dimensions.get('window').width;
-const ZooScreen = () => {
-  const { animals, coins, unlockAnimal, feedAnimal } = useContext(ZooContext);
+const ZooScreen = ({ navigation }) => {
+  const { 
+    animals, 
+    coins, 
+    unlockAnimal, 
+    feedAnimal,
+    playWithAnimal,
+    cleanAnimal,
+    restAnimal,
+    petAnimal 
+  } = useContext(ZooContext);
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [animalDetailModalVisible, setAnimalDetailModalVisible] = useState(false);
   const [newlyAddedAnimalId, setNewlyAddedAnimalId] = useState(null);
@@ -351,17 +345,19 @@ const ZooScreen = () => {
                       style={[
                         styles.detailHappinessBarFill, 
                         { 
-                          width: `${selectedAnimal.happiness}%`,
-                          backgroundColor: getHappinessColor(selectedAnimal.happiness)
+                          width: `${selectedAnimal.stats.happiness}%`,
+                          backgroundColor: getHappinessColor(selectedAnimal.stats.happiness)
+
                         }
                       ]} 
                     />
                   </View>
                   <Text style={[
                     styles.detailValue,
-                    { color: getHappinessColor(selectedAnimal.happiness) }
+                    { color: getHappinessColor(selectedAnimal.stats.happiness)
+                    }
                   ]}>
-                    {`${selectedAnimal.happiness}%`}
+                    {`${selectedAnimal.stats.happiness}%`}
                   </Text>
                 </View>
                 
@@ -395,6 +391,15 @@ const ZooScreen = () => {
               >
                 <Ionicons name="fast-food-outline" size={20} color="white" style={{marginRight: 6}} />
                 <Text style={styles.feedButtonText}>Feed ({coins >= 5 ? '5 coins' : 'Need 5 coins'})</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.careButton}
+                onPress={() => {
+                  setAnimalDetailModalVisible(false);
+                  navigation.navigate('AnimalCare', { animalId: selectedAnimal.id });
+                }}
+              >
+                <Text style={styles.careButtonText}>Take Care</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -755,6 +760,49 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  careButton: {
+    marginTop: 10,
+    backgroundColor: '#4CAF50',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  careButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  detailProgressBar: {
+    width: '100%',
+    height: 10,
+    backgroundColor: '#f1f1f1',
+    borderRadius: 5,
+    overflow: 'hidden',
+    marginBottom: 5,
+  },
+  detailProgressFill: {
+    height: '100%',
+    backgroundColor: '#5D8BF4',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#5D8BF4',
+    padding: 10,
+    borderRadius: 8,
+    marginHorizontal: 5,
+  },
+  actionButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginLeft: 6,
   },
 });
 

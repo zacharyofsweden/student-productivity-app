@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import AnimalCareScreen from '../screens/AnimalCareScreen'; // Added import
 
 // Screens
 import OnboardingScreens from '../components/OnboardingScreens';
@@ -38,6 +39,11 @@ const AppRouter = () => {
             name="Help"
             component={HelpScreen}
             options={{ headerShown: true, title: 'Help Center' }}
+          />
+          <Stack.Screen 
+            name="AnimalCare" 
+            component={AnimalCareScreen} 
+            options={{ headerShown: true, title: 'Animal Care' }} 
           />
         </>
       )}

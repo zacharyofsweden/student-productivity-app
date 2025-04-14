@@ -14,17 +14,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ZooContext } from '../contexts/ZooContext';
 import { personalityDialog, personalityEmojis } from '../utils/zooHelpers';
-
+import { animalImages } from '../assets/animalAssets';
 const { width, height } = Dimensions.get('window');
 
-const animalImages = {
-  'Rabbit': require('../screens/assets/rabbit.png'),
-  'Turtle': require('../screens/assets/turtle.png'),
-  'Fox': require('../screens/assets/fox.png'),
-  'Owl': require('../screens/assets/owl.png'),
-  'Lion': require('../screens/assets/lion.png'),
-  'Elephant': require('../screens/assets/Elephant.png'),
-};
 
 const AnimalCareScreen = ({ route }) => {
   const { animalId } = route.params;

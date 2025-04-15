@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import GirlIntroImage from '../assets/KukuZooGuide.png';
 const { width } = Dimensions.get('window');
 
 const onboardingData = [
@@ -76,7 +76,7 @@ const OnboardingScreens = ({ onComplete }) => {
   const renderItem = ({ item }) => {
     return (
       <View style={[styles.slide, { backgroundColor: item.primaryColor }]}>
-        <Image source={item.image} style={styles.image} resizeMode="contain" />
+        <Image source={GirlIntroImage} style={styles.girlImage} resizeMode="contain" />
         <View style={styles.textContainer}>
           <Text style={styles.title}>{item.title}</Text>
           <Text style={styles.description}>{item.description}</Text>
@@ -84,7 +84,6 @@ const OnboardingScreens = ({ onComplete }) => {
       </View>
     );
   };
-
   const renderDotIndicators = () => {
     return onboardingData.map((_, index) => {
       const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
@@ -246,6 +245,11 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '500',
+  },
+  girlImage: {
+    width: width * 0.4,
+    height: width * 0.4,
+    marginBottom: 20,
   },
 });
 

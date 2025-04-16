@@ -1,17 +1,18 @@
 import React, { useState, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Image, 
-  TouchableOpacity, 
-  Dimensions, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Dimensions,
   FlatList,
   Animated
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import GirlIntroImage from '../assets/KukuZooGuide.png';
+import GirlIntroImage from '../assets/images/KukuZooGuide_compatible.png';
+
 const { width } = Dimensions.get('window');
 
 const onboardingData = [
@@ -19,28 +20,24 @@ const onboardingData = [
     id: '1',
     title: 'Welcome to ZooFocus!',
     description: 'Boost your productivity while building a virtual zoo of adorable animals.',
-    //image: require('../assets/welcome.png'), // You'll need to add this image
     primaryColor: '#5D8BF4',
   },
   {
     id: '2',
     title: 'Manage Your Tasks',
     description: 'Create and organize tasks. Complete them to earn coins for your zoo!',
-    //image: require('../assets/tasks.png'), // You'll need to add this image
     primaryColor: '#FF6B6B',
   },
   {
     id: '3',
     title: 'Stay Focused with Pomodoro',
     description: 'Use the Pomodoro technique to boost your productivity and earn more coins.',
-    //image: require('../assets/pomodoro.png'), // You'll need to add this image
     primaryColor: '#4ECDC4',
   },
   {
     id: '4',
     title: 'Build Your Zoo',
     description: 'Spend your hard-earned coins to unlock new animals and take care of them!',
-    //image: require('../assets/zoo.png'), // You'll need to add this image
     primaryColor: '#FFD54F',
   }
 ];
@@ -76,7 +73,23 @@ const OnboardingScreens = ({ onComplete }) => {
   const renderItem = ({ item }) => {
     return (
       <View style={[styles.slide, { backgroundColor: item.primaryColor }]}>
-        <Image source={GirlIntroImage} style={styles.girlImage} resizeMode="contain" />
+        <Image
+          source={GirlIntroImage}
+          style={{
+            width: 200,
+            height: 200,
+            backgroundColor: 'pink',
+            borderWidth: 2,
+            borderColor: 'black',
+          }}
+          resizeMode="contain"
+          onLoad={() => {
+            console.log('✅ Image loaded successfully:', GirlIntroImage);
+          }}
+          onError={(e) => {
+            console.log('🚨 Image failed to load:', e.nativeEvent.error);
+          }}
+        />
         <View style={styles.textContainer}>
           <Text style={styles.title}>{item.title}</Text>
           <Text style={styles.description}>{item.description}</Text>
@@ -84,29 +97,30 @@ const OnboardingScreens = ({ onComplete }) => {
       </View>
     );
   };
+
   const renderDotIndicators = () => {
     return onboardingData.map((_, index) => {
       const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
-      
+
       const dotWidth = scrollX.interpolate({
         inputRange,
         outputRange: [10, 20, 10],
         extrapolate: 'clamp',
       });
-      
+
       const opacity = scrollX.interpolate({
         inputRange,
         outputRange: [0.3, 1, 0.3],
         extrapolate: 'clamp',
       });
-      
+
       return (
-        <Animated.View 
-          key={index} 
+        <Animated.View
+          key={index}
           style={[
-            styles.dot, 
+            styles.dot,
             { width: dotWidth, opacity }
-          ]} 
+          ]}
         />
       );
     });
@@ -130,33 +144,33 @@ const OnboardingScreens = ({ onComplete }) => {
         onViewableItemsChanged={viewableItemsChanged}
         viewabilityConfig={viewConfig}
       />
-      
+
       <View style={styles.bottomContainer}>
         <View style={styles.dotContainer}>
           {renderDotIndicators()}
         </View>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={[
-            styles.button, 
+            styles.button,
             { backgroundColor: onboardingData[currentIndex].primaryColor }
-          ]} 
+          ]}
           onPress={goToNextSlide}
         >
           <Text style={styles.buttonText}>
             {currentIndex === onboardingData.length - 1 ? 'Get Started' : 'Next'}
           </Text>
-          <Ionicons 
-            name={currentIndex === onboardingData.length - 1 ? "checkmark" : "arrow-forward"} 
-            size={20} 
-            color="white" 
-            style={styles.buttonIcon} 
+          <Ionicons
+            name={currentIndex === onboardingData.length - 1 ? "checkmark" : "arrow-forward"}
+            size={20}
+            color="white"
+            style={styles.buttonIcon}
           />
         </TouchableOpacity>
-        
+
         {currentIndex < onboardingData.length - 1 && (
-          <TouchableOpacity 
-            style={styles.skipButton} 
+          <TouchableOpacity
+            style={styles.skipButton}
             onPress={completeOnboarding}
           >
             <Text style={styles.skipText}>Skip</Text>
@@ -245,11 +259,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '500',
-  },
-  girlImage: {
-    width: width * 0.4,
-    height: width * 0.4,
-    marginBottom: 20,
   },
 });
 

@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { TaskProvider } from './contexts/TaskContext';
 import { ZooProvider } from './contexts/ZooContext';
 
-import AppRouter from './navigation/AppRouter'; // 👈 NEW
+import AppRouter from './navigation/AppRouter'; 
 
 export default function App() {
   return (

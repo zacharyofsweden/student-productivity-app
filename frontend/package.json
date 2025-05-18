@@ -21,7 +21,8 @@
     "expo-google-app-auth": "~8.3.0",
     "expo-notifications": "~0.31.2",
     "@react-native-async-storage/async-storage": "2.1.2",
-    "@react-native-community/datetimepicker": "8.3.0"
+    "@react-native-community/datetimepicker": "8.3.0",
+    "expo-dev-client": "~5.1.8"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

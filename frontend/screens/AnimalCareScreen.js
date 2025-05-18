@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ZooContext } from '../contexts/ZooContext';
 import { personalityDialog, personalityEmojis } from '../utils/zooHelpers';
-import { animalImages } from '../assets/images/animalAssets';
+import { animalImages } from '../assets/animalAssets';
 const { width, height } = Dimensions.get('window');
 
 

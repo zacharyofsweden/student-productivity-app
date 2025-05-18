@@ -15,8 +15,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { ZooContext } from '../contexts/ZooContext';
 import { personalityEmojis } from '../utils/zooHelpers';
-import { animalImages } from '../assets/images/animalAssets';
-import { zooBackgrounds } from '../assets/images/zooAssets';
+import { animalImages } from '../assets/animalAssets';
+import { zooBackgrounds } from '../assets/zooAssets';
 
 
 const screenWidth = Dimensions.get('window').width;

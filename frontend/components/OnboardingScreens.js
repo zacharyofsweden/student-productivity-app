@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import GirlIntroImage from '../assets/images/KukuZooGuide_compatible.png';
+import GirlIntroImage from '../assets/KukuZooGuide_compatible.png';
 
 const { width } = Dimensions.get('window');
 

@@ -7,18 +7,17 @@ import HomeScreen from '../screens/HomeScreen';
 import TasksScreen from '../screens/TasksScreen';
 import PomodoroScreen from '../screens/PomodoroScreen';
 import ZooScreen from '../screens/ZooScreen';
-import HelpScreen from '../screens/HelpScreen'; 
-
+import HelpScreen from '../screens/HelpScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
 
-const AppNavigator = () => {
+export default function TabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-
           if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'Tasks') {
@@ -27,8 +26,11 @@ const AppNavigator = () => {
             iconName = focused ? 'timer' : 'timer-outline';
           } else if (route.name === 'Zoo') {
             iconName = focused ? 'paw' : 'paw-outline';
+          } else if (route.name === 'Help') {
+            iconName = focused ? 'help-circle' : 'help-circle-outline';
+          } else if (route.name === 'Settings') {
+            iconName = focused ? 'settings' : 'settings-outline';
           }
-
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#5D8BF4',
@@ -40,8 +42,7 @@ const AppNavigator = () => {
       <Tab.Screen name="Pomodoro" component={PomodoroScreen} />
       <Tab.Screen name="Zoo" component={ZooScreen} />
       <Tab.Screen name="Help" component={HelpScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
-};
-
-export default AppNavigator;
+}

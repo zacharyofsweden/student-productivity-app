@@ -1,4 +1,3 @@
-// zooHelpers.js
 
 export const personalityEmojis = {
     Playful: '🎉',

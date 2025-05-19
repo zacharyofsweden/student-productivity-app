@@ -6,14 +6,13 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
-  FlatList,
-  Animated
+  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import GirlIntroImage from '../assets/KukuZooGuide_compatible.png';
+import GirlIntroImage from '../assets/Test.png';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const onboardingData = [
   {
@@ -39,7 +38,7 @@ const onboardingData = [
     title: 'Build Your Zoo',
     description: 'Spend your hard-earned coins to unlock new animals and take care of them!',
     primaryColor: '#FFD54F',
-  }
+  },
 ];
 
 const OnboardingScreens = ({ onComplete }) => {
@@ -47,6 +46,7 @@ const OnboardingScreens = ({ onComplete }) => {
   const flatListRef = useRef(null);
   const scrollX = useRef(new Animated.Value(0)).current;
 
+  /* ------------------------- helpers -------------------------- */
   const viewableItemsChanged = useRef(({ viewableItems }) => {
     setCurrentIndex(viewableItems[0]?.index || 0);
   }).current;
@@ -70,33 +70,26 @@ const OnboardingScreens = ({ onComplete }) => {
     }
   };
 
-  const renderItem = ({ item }) => {
-    return (
-      <View style={[styles.slide, { backgroundColor: item.primaryColor }]}>
-        <Image
-          source={GirlIntroImage}
-          style={{
-            width: 200,
-            height: 200,
-            backgroundColor: 'pink',
-            borderWidth: 2,
-            borderColor: 'black',
-          }}
-          resizeMode="contain"
-          onLoad={() => {
-            console.log('✅ Image loaded successfully:', GirlIntroImage);
-          }}
-          onError={(e) => {
-            console.log('🚨 Image failed to load:', e.nativeEvent.error);
-          }}
-        />
-        <View style={styles.textContainer}>
+  /* ------------------------- render --------------------------- */
+  const renderItem = ({ item }) => (
+    <View style={[styles.slide, { backgroundColor: item.primaryColor }]}>      
+      {/* ---------- speech bubble ---------- */}
+      <View style={styles.speechBubbleContainer}>
+        <View style={styles.speechBubble}>
           <Text style={styles.title}>{item.title}</Text>
           <Text style={styles.description}>{item.description}</Text>
+          <View style={styles.speechTail} />
         </View>
       </View>
-    );
-  };
+
+      {/* ---------- zookeeper image ---------- */}
+      <Image
+        source={GirlIntroImage}
+        style={styles.girlImage}
+        resizeMode="contain"
+      />
+    </View>
+  );
 
   const renderDotIndicators = () => {
     return onboardingData.map((_, index) => {
@@ -104,7 +97,7 @@ const OnboardingScreens = ({ onComplete }) => {
 
       const dotWidth = scrollX.interpolate({
         inputRange,
-        outputRange: [10, 20, 10],
+        outputRange: [10, 24, 10],
         extrapolate: 'clamp',
       });
 
@@ -117,11 +110,7 @@ const OnboardingScreens = ({ onComplete }) => {
       return (
         <Animated.View
           key={index}
-          style={[
-            styles.dot,
-            { width: dotWidth, opacity }
-          ]}
-        />
+          style={[styles.dot, { width: dotWidth, opacity }]} />
       );
     });
   };
@@ -145,23 +134,19 @@ const OnboardingScreens = ({ onComplete }) => {
         viewabilityConfig={viewConfig}
       />
 
+      {/* ---------------- bottom controls ---------------- */}
       <View style={styles.bottomContainer}>
-        <View style={styles.dotContainer}>
-          {renderDotIndicators()}
-        </View>
+        <View style={styles.dotContainer}>{renderDotIndicators()}</View>
 
         <TouchableOpacity
-          style={[
-            styles.button,
-            { backgroundColor: onboardingData[currentIndex].primaryColor }
-          ]}
+          style={[styles.button, { backgroundColor: onboardingData[currentIndex].primaryColor }]}
           onPress={goToNextSlide}
         >
           <Text style={styles.buttonText}>
             {currentIndex === onboardingData.length - 1 ? 'Get Started' : 'Next'}
           </Text>
           <Ionicons
-            name={currentIndex === onboardingData.length - 1 ? "checkmark" : "arrow-forward"}
+            name={currentIndex === onboardingData.length - 1 ? 'checkmark' : 'arrow-forward'}
             size={20}
             color="white"
             style={styles.buttonIcon}
@@ -169,10 +154,7 @@ const OnboardingScreens = ({ onComplete }) => {
         </TouchableOpacity>
 
         {currentIndex < onboardingData.length - 1 && (
-          <TouchableOpacity
-            style={styles.skipButton}
-            onPress={completeOnboarding}
-          >
+          <TouchableOpacity style={styles.skipButton} onPress={completeOnboarding}>
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         )}
@@ -181,42 +163,80 @@ const OnboardingScreens = ({ onComplete }) => {
   );
 };
 
+/* ======================== styles =========================== */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
   },
+  /** Slide now uses flexbox column with tighter spacing **/
   slide: {
     flex: 1,
     width,
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+    paddingTop: 40,
+    paddingBottom: 120,
   },
-  image: {
-    width: width * 0.8,
-    height: width * 0.8,
-    marginBottom: 30,
+  /** MUCH bigger image (≈3× previous size) **/
+  girlImage: {
+    width: width * 0.85,
+    height: height * 0.7,
   },
-  textContainer: {
+  /** Bubble lowered—slight negative margin so it kisses the image **/
+  speechBubbleContainer: {
+    width: width * 0.85,
+    marginBottom: -30, // pulls bubble closer to the image
     alignItems: 'center',
+  },
+  speechBubble: {
+    backgroundColor: 'white',
+    paddingVertical: 18,
+    paddingHorizontal: 22,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: '#eee',
+    maxWidth: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 4,
+    elevation: 2,
+    position: 'relative',
+    alignItems: 'center',
+  },
+  /** Tail still points downward **/
+  speechTail: {
+    position: 'absolute',
+    bottom: -18,
+    left: '50%',
+    marginLeft: -16,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 16,
+    borderLeftColor: 'transparent',
+    borderRightWidth: 16,
+    borderRightColor: 'transparent',
+    borderTopWidth: 18,
+    borderTopColor: 'white',
   },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 10,
+    color: '#5D8BF4',
+    marginBottom: 6,
     textAlign: 'center',
   },
   description: {
     fontSize: 16,
-    color: 'white',
+    color: '#555',
     textAlign: 'center',
-    paddingHorizontal: 20,
+    paddingTop: 2,
   },
+  /* -------- bottom controls -------- */
   bottomContainer: {
     position: 'absolute',
-    bottom: 50,
+    bottom: 40,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -224,7 +244,7 @@ const styles = StyleSheet.create({
   },
   dotContainer: {
     flexDirection: 'row',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   dot: {
     height: 10,
@@ -236,9 +256,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 15,
+    paddingVertical: 14,
     paddingHorizontal: 30,
-    borderRadius: 10,
+    borderRadius: 12,
     width: '100%',
   },
   buttonText: {
@@ -251,7 +271,7 @@ const styles = StyleSheet.create({
   },
   skipButton: {
     position: 'absolute',
-    top: -40,
+    top: -36,
     right: 20,
     padding: 10,
   },

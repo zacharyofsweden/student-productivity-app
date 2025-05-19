@@ -14,11 +14,13 @@ import GirlIntroImage from '../assets/Test.png';
 
 const { width, height } = Dimensions.get('window');
 
+
 const onboardingData = [
   {
     id: '1',
     title: 'Welcome to ZooFocus!',
-    description: 'Boost your productivity while building a virtual zoo of adorable animals.',
+    description:
+      'Boost your productivity while building a virtual zoo of adorable animals.',
     primaryColor: '#5D8BF4',
   },
   {
@@ -30,23 +32,24 @@ const onboardingData = [
   {
     id: '3',
     title: 'Stay Focused with Pomodoro',
-    description: 'Use the Pomodoro technique to boost your productivity and earn more coins.',
+    description:
+      'Use the Pomodoro technique to boost your productivity and earn more coins.',
     primaryColor: '#4ECDC4',
   },
   {
     id: '4',
     title: 'Build Your Zoo',
-    description: 'Spend your hard-earned coins to unlock new animals and take care of them!',
+    description: 'Spend your hard‑earned coins to unlock new animals and take care of them!',
     primaryColor: '#FFD54F',
   },
 ];
+
 
 const OnboardingScreens = ({ onComplete }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef(null);
   const scrollX = useRef(new Animated.Value(0)).current;
 
-  /* ------------------------- helpers -------------------------- */
   const viewableItemsChanged = useRef(({ viewableItems }) => {
     setCurrentIndex(viewableItems[0]?.index || 0);
   }).current;
@@ -70,29 +73,26 @@ const OnboardingScreens = ({ onComplete }) => {
     }
   };
 
-  /* ------------------------- render --------------------------- */
   const renderItem = ({ item }) => (
-    <View style={[styles.slide, { backgroundColor: item.primaryColor }]}>      
-      {/* ---------- speech bubble ---------- */}
-      <View style={styles.speechBubbleContainer}>
-        <View style={styles.speechBubble}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.description}>{item.description}</Text>
-          <View style={styles.speechTail} />
+    <View style={[styles.slide, { backgroundColor: item.primaryColor }]}>
+     
+      <View style={styles.contentWrapper}>
+        <View style={styles.speechBubbleContainer}>
+          <View style={styles.speechBubble}>
+            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.description}>{item.description}</Text>
+            <View style={styles.speechTail} />
+          </View>
         </View>
-      </View>
 
-      {/* ---------- zookeeper image ---------- */}
-      <Image
-        source={GirlIntroImage}
-        style={styles.girlImage}
-        resizeMode="contain"
-      />
+        {/* character image */}
+        <Image source={GirlIntroImage} style={styles.girlImage} resizeMode="contain" />
+      </View>
     </View>
   );
 
-  const renderDotIndicators = () => {
-    return onboardingData.map((_, index) => {
+  const renderDotIndicators = () =>
+    onboardingData.map((_, index) => {
       const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
 
       const dotWidth = scrollX.interpolate({
@@ -107,13 +107,8 @@ const OnboardingScreens = ({ onComplete }) => {
         extrapolate: 'clamp',
       });
 
-      return (
-        <Animated.View
-          key={index}
-          style={[styles.dot, { width: dotWidth, opacity }]} />
-      );
+      return <Animated.View key={index} style={[styles.dot, { width: dotWidth, opacity }]} />;
     });
-  };
 
   return (
     <View style={styles.container}>
@@ -128,13 +123,13 @@ const OnboardingScreens = ({ onComplete }) => {
         bounces={false}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: false }
+          { useNativeDriver: false },
         )}
         onViewableItemsChanged={viewableItemsChanged}
         viewabilityConfig={viewConfig}
       />
 
-      {/* ---------------- bottom controls ---------------- */}
+      {/* bottom controls */}
       <View style={styles.bottomContainer}>
         <View style={styles.dotContainer}>{renderDotIndicators()}</View>
 
@@ -163,49 +158,50 @@ const OnboardingScreens = ({ onComplete }) => {
   );
 };
 
-/* ======================== styles =========================== */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
   },
-  /** Slide now uses flexbox column with tighter spacing **/
   slide: {
     flex: 1,
     width,
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingTop: 40,
-    paddingBottom: 120,
   },
-  /** MUCH bigger image (≈3× previous size) **/
+
+  contentWrapper: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+  },
   girlImage: {
-    width: width * 0.85,
-    height: height * 0.7,
+    width: width * 2,
+    height: height * 0.4,
+    marginTop: 1,
   },
-  /** Bubble lowered—slight negative margin so it kisses the image **/
   speechBubbleContainer: {
-    width: width * 0.85,
-    marginBottom: -30, // pulls bubble closer to the image
+    width: '100%',
     alignItems: 'center',
+    marginBottom: 1,
   },
   speechBubble: {
     backgroundColor: 'white',
-    paddingVertical: 18,
+    paddingVertical: 15,
     paddingHorizontal: 22,
     borderRadius: 25,
     borderWidth: 2,
     borderColor: '#eee',
-    maxWidth: '100%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07,
     shadowRadius: 4,
     elevation: 2,
     position: 'relative',
-    alignItems: 'center',
   },
-  /** Tail still points downward **/
   speechTail: {
     position: 'absolute',
     bottom: -18,
@@ -231,9 +227,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#555',
     textAlign: 'center',
-    paddingTop: 2,
   },
-  /* -------- bottom controls -------- */
+  /* bottom controls */
   bottomContainer: {
     position: 'absolute',
     bottom: 40,

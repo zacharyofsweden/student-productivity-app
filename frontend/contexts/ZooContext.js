@@ -1,8 +1,15 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TaskContext } from './TaskContext';
-
+import {
+  personalityDialog,
+  getRandomPersonality,
+  getPersonalityEffects,
+  getPetHappinessBoost,
+  updateAnimalMood,
+} from '../utils/zooHelpers';
 export const ZooContext = createContext();
+
 
 export const ZooProvider = ({ children }) => {
   const [animals, setAnimals] = useState([]);
@@ -10,14 +17,162 @@ export const ZooProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const { tasks } = useContext(TaskContext);
 
-  // Sample animal data
+  // Sample animal data with Tamagotchi-style attributes
   const availableAnimals = [
-    { id: '1', name: 'Rabbit', cost: 50, unlocked: false, happiness: 100, lastFed: null },
-    { id: '2', name: 'Turtle', cost: 100, unlocked: false, happiness: 100, lastFed: null },
-    { id: '3', name: 'Fox', cost: 150, unlocked: false, happiness: 100, lastFed: null },
-    { id: '4', name: 'Owl', cost: 200, unlocked: false, happiness: 100, lastFed: null },
-    { id: '5', name: 'Lion', cost: 300, unlocked: false, happiness: 100, lastFed: null },
-    { id: '6', name: 'Elephant', cost: 400, unlocked: false, happiness: 100, lastFed: null },
+    { 
+      id: '1', 
+      name: 'Rabbit', 
+      cost: 50, 
+      unlocked: false, 
+      stats: {
+        hunger: 100,      // 100 is full, 0 is starving
+        energy: 100,      // 100 is fully rested, 0 is exhausted
+        happiness: 100,   // 100 is very happy, 0 is sad
+        hygiene: 100,     // 100 is clean, 0 is dirty
+        health: 100,      // 100 is healthy, 0 is sick
+      },
+      age: 0,             // Days since unlocked
+      lastInteraction: null,
+      lastFed: null,
+      lastPlayed: null,
+      lastCleaned: null,
+      lastSlept: null,
+      personality: '',        // new
+      animation: 'idle',      // new
+      status: 'idle',         // new
+      statusStartTime: null,  // new
+      statusEndTime: null,    // new
+      mood: 'happy',      // Current mood/animation state
+      level: 1,           // Level increases with age and care
+    },
+    { 
+      id: '2', 
+      name: 'Turtle', 
+      cost: 100, 
+      unlocked: false, 
+      stats: {
+        hunger: 100,
+        energy: 100,
+        happiness: 100,
+        hygiene: 100,
+        health: 100,
+      },
+      age: 0,
+      lastInteraction: null,
+      lastFed: null,
+      lastPlayed: null,
+      lastCleaned: null,
+      lastSlept: null,
+      personality: '',        // new
+      animation: 'idle',      // new
+      status: 'idle',         // new
+      statusStartTime: null,  // new
+      statusEndTime: null,    // new
+      mood: 'happy',
+      level: 1,
+    },
+    { 
+      id: '3', 
+      name: 'Fox', 
+      cost: 150, 
+      unlocked: false, 
+      stats: {
+        hunger: 100,
+        energy: 100,
+        happiness: 100,
+        hygiene: 100,
+        health: 100,
+      },
+      age: 0,personality: '',        // new
+      animation: 'idle',      // new
+      status: 'idle',         // new
+      statusStartTime: null,  // new
+      statusEndTime: null,    // new
+      lastInteraction: null,
+      lastFed: null,
+      lastPlayed: null,
+      lastCleaned: null,
+      lastSlept: null,
+      mood: 'happy',
+      level: 1,
+    },
+    { 
+      id: '4', 
+      name: 'Owl', 
+      cost: 200, 
+      unlocked: false, 
+      stats: {
+        hunger: 100,
+        energy: 100,
+        happiness: 100,
+        hygiene: 100,
+        health: 100,
+      },
+      age: 0,
+      lastInteraction: null,
+      lastFed: null,
+      personality: '',        // new
+      animation: 'idle',      // new
+      status: 'idle',         // new
+      statusStartTime: null,  // new
+      statusEndTime: null,    // new
+      lastPlayed: null,
+      lastCleaned: null,
+      lastSlept: null,
+      mood: 'happy',
+      level: 1,
+    },
+    { 
+      id: '5', 
+      name: 'Lion', 
+      cost: 300, 
+      unlocked: false, 
+      stats: {
+        hunger: 100,
+        energy: 100,
+        happiness: 100,
+        hygiene: 100,
+        health: 100,
+      },
+      age: 0,
+      lastInteraction: null,
+      lastFed: null,
+      lastPlayed: null,
+      personality: '',        // new
+      animation: 'idle',      // new
+      status: 'idle',         // new
+      statusStartTime: null,  // new
+      statusEndTime: null,    // new
+      lastCleaned: null,
+      lastSlept: null,
+      mood: 'happy',
+      level: 1,
+    },
+    { 
+      id: '6', 
+      name: 'Elephant', 
+      cost: 400, 
+      unlocked: false, 
+      stats: {
+        hunger: 100,
+        energy: 100,
+        happiness: 100,
+        hygiene: 100,
+        health: 100,
+      },
+      age: 0,
+      lastInteraction: null,
+      lastFed: null,
+      lastPlayed: null,
+      lastCleaned: null,
+      lastSlept: null,personality: '',        // new
+      animation: 'idle',      // new
+      status: 'idle',         // new
+      statusStartTime: null,  // new
+      statusEndTime: null,    // new
+      mood: 'happy',
+      level: 1,
+    },
   ];
 
   // Load zoo data from storage on mount
@@ -28,7 +183,20 @@ export const ZooProvider = ({ children }) => {
         const storedCoins = await AsyncStorage.getItem('coins');
         
         if (storedAnimals) {
-          setAnimals(JSON.parse(storedAnimals));
+          const parsed = JSON.parse(storedAnimals);
+          const merged = availableAnimals.map(base => {
+            const saved = parsed.find(p => p.id === base.id);
+            return saved
+              ? {
+                  ...base,
+                  ...saved,
+                  stats: { ...base.stats, ...saved.stats },
+                  personality: saved.personality || getRandomPersonality(),
+                  mood: saved.mood || 'happy',
+                }
+              : base;
+          });
+          setAnimals(merged);
         } else {
           setAnimals(availableAnimals);
         }
@@ -69,7 +237,6 @@ export const ZooProvider = ({ children }) => {
     const totalSessions = tasks.reduce((acc, task) => acc + task.pomodoroSessions, 0);
     
     // Calculate how many coins to award based on completed tasks and pomodoro sessions
-    // This is a simplified example - you might want a more sophisticated approach
     const earnedCoins = completedTasks.length * 10 + totalSessions * 5;
     
     setCoins(prevCoins => prevCoins + earnedCoins);
@@ -84,7 +251,16 @@ export const ZooProvider = ({ children }) => {
       setAnimals(
         animals.map(a =>
           a.id === animalId 
-            ? { ...a, unlocked: true, lastFed: new Date().toISOString() } 
+            ? { 
+                ...a, 
+                unlocked: true, 
+                lastInteraction: new Date().toISOString(),
+                lastFed: new Date().toISOString(),
+                lastPlayed: new Date().toISOString(),
+                lastCleaned: new Date().toISOString(),
+                lastSlept: new Date().toISOString(),
+                personality: getRandomPersonality(),
+              } 
             : a
         )
       );
@@ -102,8 +278,14 @@ export const ZooProvider = ({ children }) => {
           a.id === animalId
             ? { 
                 ...a, 
-                happiness: Math.min(a.happiness + 10, 100), 
-                lastFed: new Date().toISOString() 
+                stats: {
+                  ...a.stats,
+                  hunger: Math.min(a.stats.hunger + 30, 100),
+                  health: Math.min(a.stats.health + 5, 100),
+                },
+                lastFed: new Date().toISOString(),
+                lastInteraction: new Date().toISOString(),
+                mood: 'happy'
               }
             : a
         )
@@ -113,30 +295,241 @@ export const ZooProvider = ({ children }) => {
     return false;
   };
 
-  // Decrease animal happiness over time
+  // Play with an animal
+  const playWithAnimal = (animalId) => {
+    const animal = animals.find(a => a.id === animalId);
+    if (!animal || coins < 3) return false;
+
+    const effect = {
+      Playful: { happiness: 30, energy: -10 },
+      Shy: { happiness: 15, energy: -5 },
+      Lazy: { happiness: 10, energy: -20 },
+      Energetic: { happiness: 25, energy: -15 },
+      Curious: { happiness: 20, energy: -10 },
+      Grumpy: { happiness: 10, energy: -10 },
+      Friendly: { happiness: 25, energy: -10 },
+    }[animal.personality] || { happiness: 20, energy: -10 };
+
+    setCoins(prevCoins => prevCoins - 3);
+    setAnimals(
+      animals.map(a =>
+        a.id === animalId
+          ? {
+              ...a,
+              stats: {
+                ...a.stats,
+                happiness: Math.min(a.stats.happiness + effect.happiness, 100),
+                energy: Math.max(a.stats.energy + effect.energy, 0),
+                hunger: Math.max(a.stats.hunger - 10, 0),
+              },
+              lastPlayed: new Date().toISOString(),
+              lastInteraction: new Date().toISOString(),
+              mood: 'curious'
+            }
+          : a
+      )
+    );
+    return true;
+  };
+
+  // Clean an animal
+  const cleanAnimal = (animalId) => {
+    if (coins >= 4) {
+      setCoins(prevCoins => prevCoins - 4);
+      setAnimals(
+        animals.map(a =>
+          a.id === animalId
+            ? { 
+                ...a, 
+                stats: {
+                  ...a.stats,
+                  hygiene: 100,
+                  happiness: Math.min(a.stats.happiness + 10, 100),
+                },
+                lastCleaned: new Date().toISOString(),
+                lastInteraction: new Date().toISOString(),
+                mood: 'cute'
+              }
+            : a
+        )
+      );
+      return true;
+    }
+    return false;
+  };
+
+  // Let animal sleep/rest
+  const restAnimal = (animalId) => {
+    setAnimals(
+      animals.map(a =>
+        a.id === animalId
+          ? { 
+              ...a, 
+              stats: {
+                ...a.stats,
+                energy: 100,
+                health: Math.min(a.stats.health + 10, 100),
+              },
+              lastSlept: new Date().toISOString(),
+              lastInteraction: new Date().toISOString(),
+              mood: 'innocent'
+            }
+          : a
+      )
+    );
+    return true;
+  };
+
+  // Pet/love the animal
+  const petAnimal = (animalId) => {
+    setAnimals(
+      animals.map(a =>
+        a.id === animalId
+          ? { 
+              ...a, 
+              stats: {
+                ...a.stats,
+                happiness: Math.min(a.stats.happiness + ( {
+                  Playful: 20,
+                  Shy: 10,
+                  Lazy: 15,
+                  Energetic: 15,
+                  Curious: 15,
+                  Grumpy: 5,
+                  Friendly: 25,
+                }[a.personality] || 15), 100),
+              },
+              lastInteraction: new Date().toISOString(),
+              mood: 'cute'
+            }
+          : a
+      )
+    );
+    return true;
+  };
+
+  
+  // Update animal stats and age over time
   useEffect(() => {
     const interval = setInterval(() => {
       setAnimals(
         animals.map(animal => {
           if (animal.unlocked) {
-            const lastFed = animal.lastFed ? new Date(animal.lastFed) : null;
             const now = new Date();
-            const hoursSinceLastFed = lastFed 
-              ? (now - lastFed) / (1000 * 60 * 60) 
+            const newStats = { ...animal.stats };             // Check time since last interaction
+            const lastInteraction = animal.lastInteraction ? new Date(animal.lastInteraction) : null;
+            const hoursSinceInteraction = lastInteraction 
+              ? (now   - lastInteraction) / (1000 * 60 * 60) 
               : 24;
             
-            // Decrease happiness based on time since last fed
-            let happiness = animal.happiness;
-            if (hoursSinceLastFed > 6) {
-              happiness = Math.max(0, happiness - 5);
+            // Decrease stats based on time
+            // Set time-based behavior
+            const hour = now.getHours();
+            let sleepStart = 22;
+            let sleepEnd = 6;
+            let playStart = 8;
+            let playEnd = 18;
+
+            switch (animal.personality) {
+              case 'Lazy':
+                sleepStart = 21;
+                sleepEnd = 9;
+                break;
+              case 'Energetic':
+                sleepStart = 23;
+                sleepEnd = 5;
+                playEnd = 20;
+                break;
+              case 'Shy':
+                playStart = 10;
+                playEnd = 16;
+                break;
+              case 'Playful':
+                playStart = 6;
+                playEnd = 22;
+                break;
+              case 'Grumpy':
+                sleepStart = 20;
+                sleepEnd = 7;
+                playStart = 12;
+                playEnd = 17;
+                break;
+            }
+
+            let status = animal.status;
+            let animation = animal.animation;
+            let statusStartTime = animal.statusStartTime;
+            let statusEndTime = animal.statusEndTime;
+            const sleepDuration = animal.personality === 'Lazy' ? 600 : 480; // in minutes
+
+            // Apply time-based status
+            if ((hour >= sleepStart || hour < sleepEnd) && animal.status !== 'sleeping') {
+              status = 'sleeping';
+              animation = 'zzz';
+              statusStartTime = now.toISOString();
+              statusEndTime = new Date(now.getTime() + sleepDuration * 60 * 1000).toISOString();
+            } else if (hour >= playStart && hour < playEnd && animal.status !== 'playing') {
+              status = 'playing';
+              animation = 'playing';
+              statusStartTime = now.toISOString();
+              statusEndTime = new Date(now.getTime() + 30 * 60 * 1000).toISOString();
+            }            
+            // Decrease hunger over time
+            if (hoursSinceInteraction > 2) {
+              newStats.hunger = Math.max(0, newStats.hunger - 5);
             }
             
-            return { ...animal, happiness };
+            // Decrease energy over time when awake
+            if (hoursSinceInteraction > 3) {
+              newStats.energy = Math.max(0, newStats.energy - 3);
+            }
+            
+            // Decrease happiness over time
+            if (hoursSinceInteraction > 4) {
+              newStats.happiness = Math.max(0, newStats.happiness - 4);
+            }
+            
+            // Decrease hygiene over time
+            if (hoursSinceInteraction > 8) {
+              newStats.hygiene = Math.max(0, newStats.hygiene - 5);
+            }
+            
+            // Health affected by other stats
+            if (newStats.hunger < 30 || newStats.energy < 20 || newStats.hygiene < 30) {
+              newStats.health = Math.max(0, newStats.health - 3);
+            } else if (newStats.happiness > 80 && newStats.hunger > 80 && newStats.energy > 80) {
+              newStats.health = Math.min(100, newStats.health + 1);
+            }
+            
+            // Age the animal (1 day = 24 real hours)
+            const daysSinceUnlocked = animal.lastInteraction 
+              ? Math.floor((now - new Date(animal.lastInteraction)) / (1000 * 60 * 60 * 24))
+              : 0;
+            
+            const newAge = Math.max(animal.age, daysSinceUnlocked);
+            
+            // Calculate level based on age and care
+            const avgStats = Object.values(newStats).reduce((sum, stat) => sum + stat, 0) / 5;
+            const newLevel = Math.max(1, Math.floor(newAge / 5) + Math.floor(avgStats / 20));
+            
+            // Update mood based on stats
+            const newMood = updateAnimalMood({ stats: newStats });            
+            return { 
+              ...animal,
+              stats: newStats,
+              age: newAge,
+              level: newLevel,
+              mood: newMood,
+              status,
+              animation,
+              statusStartTime,
+              statusEndTime
+            };
           }
           return animal;
         })
       );
-    }, 1000 * 60 * 30); // Check every 30 minutes
+    }, 1000 * 60 * 10); // Update every 10 minutes
     
     return () => clearInterval(interval);
   }, [animals]);
@@ -149,6 +542,10 @@ export const ZooProvider = ({ children }) => {
         loading,
         unlockAnimal,
         feedAnimal,
+        playWithAnimal,
+        cleanAnimal,
+        restAnimal,
+        petAnimal,
       }}
     >
       {children}

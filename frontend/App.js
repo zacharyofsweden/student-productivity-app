@@ -1,26 +1,30 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar }           from 'expo-status-bar';
 
-// Import contexts
-import { TaskProvider } from './contexts/TaskContext';
-import { ZooProvider } from './contexts/ZooContext';
+import { AuthProvider }         from './contexts/AuthContext';
+import { NotificationProvider } from './contexts/NotificationContext';
+import { TaskProvider }         from './contexts/TaskContext';
+import { ZooProvider }          from './contexts/ZooContext';
 
-// Import navigation
-import AppNavigator from './navigation/AppNavigator';
+import AppRouter from './navigation/AppRouter';
 
 export default function App() {
   return (
     <SafeAreaProvider>
-      <TaskProvider>
-        <ZooProvider>
-          <NavigationContainer>
-            <AppNavigator />
-            <StatusBar style="auto" />
-          </NavigationContainer>
-        </ZooProvider>
-      </TaskProvider>
+      <AuthProvider>                
+        <NotificationProvider>     
+          <TaskProvider>            
+            <ZooProvider>           
+              <NavigationContainer>
+                <AppRouter />
+                <StatusBar style="auto" />
+              </NavigationContainer>
+            </ZooProvider>
+          </TaskProvider>
+        </NotificationProvider>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

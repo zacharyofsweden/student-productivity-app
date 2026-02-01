@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   taskTypeLabel: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#666',
   },
   themesContainer: {

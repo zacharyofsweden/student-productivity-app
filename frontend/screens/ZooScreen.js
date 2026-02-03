@@ -15,11 +15,12 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { ZooContext } from '../contexts/ZooContext';
 import { personalityEmojis } from '../utils/zooHelpers';
-import { animalImages } from '../assets/animalAssets';
+// Make sure this path is correct and 'animalImages' is exported correctly in animalAssets.js
+import { animalImages } from '../assets/animalAssets'; 
 import { zooBackgrounds } from '../assets/zooAssets';
 
-
 const screenWidth = Dimensions.get('window').width;
+
 const ZooScreen = ({ navigation }) => {
   const { 
     animals, 
@@ -57,6 +58,40 @@ const ZooScreen = ({ navigation }) => {
     if (happiness >= 80) return '#4CAF50';
     if (happiness >= 50) return '#FFC107';
     return '#F44336';
+  };
+
+  // --- SAFE IMAGE RENDERING HELPER (FIXED) ---
+  const renderSafeAnimalImage = (animalName, style) => {
+    // 1. Check if the 'animalImages' object itself exists
+    if (!animalImages) {
+      console.warn("ZooScreen: 'animalImages' is undefined. Check your imports.");
+      return (
+        <View style={[style, styles.missingImagePlaceholder]}>
+          <Ionicons name="alert-circle" size={24} color="#F44336" />
+        </View>
+      );
+    }
+
+    // 2. Try to get the specific image
+    const imageSource = animalImages[animalName];
+    
+    // 3. Render image if found
+    if (imageSource) {
+      return (
+        <Image 
+          source={imageSource} 
+          style={style}
+          resizeMode="contain"
+        />
+      );
+    }
+    
+    // 4. Fallback if the specific animal name isn't found in the object
+    return (
+      <View style={[style, styles.missingImagePlaceholder]}>
+        <Ionicons name="paw" size={style.width ? style.width * 0.5 : 24} color="#ccc" />
+      </View>
+    );
   };
 
   // Handle unlock animal
@@ -156,11 +191,15 @@ const ZooScreen = ({ navigation }) => {
     return (
       <View style={styles.zooAreaContainer}>
         {/* Zoo background elements */}
-        <Image source={zooBackgrounds.grass} style={styles.zooBackground} resizeMode="repeat" />
-        <Image source={zooBackgrounds.tree1} style={styles.zooTree1} resizeMode="contain" />
-        <Image source={zooBackgrounds.tree2} style={styles.zooTree2} resizeMode="contain" />
-        <Image source={zooBackgrounds.pond} style={styles.zooPond} resizeMode="contain" />
-        <Image source={zooBackgrounds.fence} style={styles.zooFence} resizeMode="stretch" />
+        {zooBackgrounds && (
+            <>
+                {zooBackgrounds.grass && <Image source={zooBackgrounds.grass} style={styles.zooBackground} resizeMode="repeat" />}
+                {zooBackgrounds.tree1 && <Image source={zooBackgrounds.tree1} style={styles.zooTree1} resizeMode="contain" />}
+                {zooBackgrounds.tree2 && <Image source={zooBackgrounds.tree2} style={styles.zooTree2} resizeMode="contain" />}
+                {zooBackgrounds.pond && <Image source={zooBackgrounds.pond} style={styles.zooPond} resizeMode="contain" />}
+                {zooBackgrounds.fence && <Image source={zooBackgrounds.fence} style={styles.zooFence} resizeMode="stretch" />}
+            </>
+        )}
         
         {/* Render each unlocked animal */}
         {unlockedAnimals.map((animal, index) => {
@@ -184,11 +223,7 @@ const ZooScreen = ({ navigation }) => {
                 ]}
               >
                 <TouchableOpacity onPress={() => viewAnimalDetails(animal)}>
-                  <Image 
-                    source={animalImages[animal.name]} 
-                    style={styles.zooAnimalImage}
-                    resizeMode="contain"
-                  />
+                  {renderSafeAnimalImage(animal.name, styles.zooAnimalImage)}
                   <View style={[
                     styles.zooHappinessIndicator, 
                     { backgroundColor: getHappinessColor(animal.happiness) }
@@ -204,11 +239,7 @@ const ZooScreen = ({ navigation }) => {
                 style={[styles.zooAnimalContainer, position]}
               >
                 <TouchableOpacity onPress={() => viewAnimalDetails(animal)}>
-                  <Image 
-                    source={animalImages[animal.name]} 
-                    style={styles.zooAnimalImage}
-                    resizeMode="contain"
-                  />
+                  {renderSafeAnimalImage(animal.name, styles.zooAnimalImage)}
                   <View style={[
                     styles.zooHappinessIndicator, 
                     { backgroundColor: getHappinessColor(animal.happiness) }
@@ -262,11 +293,7 @@ const ZooScreen = ({ navigation }) => {
               style={styles.collectionItem}
               onPress={() => viewAnimalDetails(item)}
             >
-              <Image 
-                source={animalImages[item.name]} 
-                style={styles.collectionImage}
-                resizeMode="contain"
-              />
+              {renderSafeAnimalImage(item.name, styles.collectionImage)}
               <View style={styles.collectionInfo}>
                 <Text style={styles.collectionName}>{item.name}</Text>
                 <View style={styles.happinessBar}>
@@ -331,11 +358,7 @@ const ZooScreen = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
               
-              <Image 
-                source={animalImages[selectedAnimal.name]} 
-                style={styles.detailAnimalImage}
-                resizeMode="contain"
-              />
+              {renderSafeAnimalImage(selectedAnimal.name, styles.detailAnimalImage)}
               
               <View style={styles.detailsContainer}>
                 <View style={styles.detailItem}>
@@ -345,19 +368,17 @@ const ZooScreen = ({ navigation }) => {
                       style={[
                         styles.detailHappinessBarFill, 
                         { 
-                          width: `${selectedAnimal.stats.happiness}%`,
-                          backgroundColor: getHappinessColor(selectedAnimal.stats.happiness)
-
+                          width: `${selectedAnimal.stats ? selectedAnimal.stats.happiness : selectedAnimal.happiness}%`,
+                          backgroundColor: getHappinessColor(selectedAnimal.stats ? selectedAnimal.stats.happiness : selectedAnimal.happiness)
                         }
                       ]} 
                     />
                   </View>
                   <Text style={[
                     styles.detailValue,
-                    { color: getHappinessColor(selectedAnimal.stats.happiness)
-                    }
+                    { color: getHappinessColor(selectedAnimal.stats ? selectedAnimal.stats.happiness : selectedAnimal.happiness) }
                   ]}>
-                    {`${selectedAnimal.stats.happiness}%`}
+                    {`${selectedAnimal.stats ? selectedAnimal.stats.happiness : selectedAnimal.happiness}%`}
                   </Text>
                 </View>
                 
@@ -528,6 +549,16 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     resizeMode: 'contain',
+  },
+  // ADDED: Style for the fallback placeholder
+  missingImagePlaceholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#eaeaea',
+    borderRadius: 40,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    opacity: 0.7
   },
   zooHappinessIndicator: {
     position: 'absolute',

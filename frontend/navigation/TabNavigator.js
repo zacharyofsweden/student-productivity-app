@@ -6,6 +6,7 @@ import HomeScreen from '../screens/HomeScreen';
 import TasksScreen from '../screens/TasksScreen';
 import PomodoroScreen from '../screens/PomodoroScreen';
 import ZooScreen from '../screens/ZooScreen';
+import ShopScreen from '../screens/ShopScreen'; // Imported ShopScreen
 import HelpScreen from '../screens/HelpScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
@@ -17,12 +18,15 @@ export default function TabNavigator() {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let name = 'ellipse';
+          
           if (route.name === 'Home')      name = focused ? 'home' : 'home-outline';
           if (route.name === 'Tasks')     name = focused ? 'list' : 'list-outline';
           if (route.name === 'Pomodoro')  name = focused ? 'timer' : 'timer-outline';
           if (route.name === 'Zoo')       name = focused ? 'paw' : 'paw-outline';
+          if (route.name === 'Shop')      name = focused ? 'cart' : 'cart-outline'; // Added Shop icon logic
           if (route.name === 'Help')      name = focused ? 'help-circle' : 'help-circle-outline';
           if (route.name === 'Settings')  name = focused ? 'settings' : 'settings-outline';
+          
           return <Ionicons name={name} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#5D8BF4',
@@ -33,6 +37,7 @@ export default function TabNavigator() {
       <Tab.Screen name="Tasks"     component={TasksScreen} />
       <Tab.Screen name="Pomodoro"  component={PomodoroScreen} />
       <Tab.Screen name="Zoo"       component={ZooScreen} />
+      <Tab.Screen name="Shop"      component={ShopScreen} /> 
       <Tab.Screen name="Help"      component={HelpScreen} />
       <Tab.Screen name="Settings"  component={SettingsScreen} />
     </Tab.Navigator>

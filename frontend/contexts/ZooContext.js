@@ -8,8 +8,10 @@ import {
   getPetHappinessBoost,
   updateAnimalMood,
 } from '../utils/zooHelpers';
-export const ZooContext = createContext();
+import { PACK_TYPES } from '../assets/animalAssets';
+import { pullAnimal } from '../utils/gachaSystem';
 
+export const ZooContext = createContext();
 
 export const ZooProvider = ({ children }) => {
   const [animals, setAnimals] = useState([]);
@@ -37,11 +39,11 @@ export const ZooProvider = ({ children }) => {
       lastPlayed: null,
       lastCleaned: null,
       lastSlept: null,
-      personality: '',        // new
-      animation: 'idle',      // new
-      status: 'idle',         // new
-      statusStartTime: null,  // new
-      statusEndTime: null,    // new
+      personality: '',        
+      animation: 'idle',      
+      status: 'idle',         
+      statusStartTime: null,  
+      statusEndTime: null,    
       mood: 'happy',      // Current mood/animation state
       level: 1,           // Level increases with age and care
     },
@@ -63,11 +65,11 @@ export const ZooProvider = ({ children }) => {
       lastPlayed: null,
       lastCleaned: null,
       lastSlept: null,
-      personality: '',        // new
-      animation: 'idle',      // new
-      status: 'idle',         // new
-      statusStartTime: null,  // new
-      statusEndTime: null,    // new
+      personality: '',        
+      animation: 'idle',      
+      status: 'idle',         
+      statusStartTime: null,  
+      statusEndTime: null,    
       mood: 'happy',
       level: 1,
     },
@@ -83,11 +85,12 @@ export const ZooProvider = ({ children }) => {
         hygiene: 100,
         health: 100,
       },
-      age: 0,personality: '',        // new
-      animation: 'idle',      // new
-      status: 'idle',         // new
-      statusStartTime: null,  // new
-      statusEndTime: null,    // new
+      age: 0,
+      personality: '',        
+      animation: 'idle',      
+      status: 'idle',         
+      statusStartTime: null,  
+      statusEndTime: null,    
       lastInteraction: null,
       lastFed: null,
       lastPlayed: null,
@@ -111,11 +114,11 @@ export const ZooProvider = ({ children }) => {
       age: 0,
       lastInteraction: null,
       lastFed: null,
-      personality: '',        // new
-      animation: 'idle',      // new
-      status: 'idle',         // new
-      statusStartTime: null,  // new
-      statusEndTime: null,    // new
+      personality: '',        
+      animation: 'idle',      
+      status: 'idle',         
+      statusStartTime: null,  
+      statusEndTime: null,    
       lastPlayed: null,
       lastCleaned: null,
       lastSlept: null,
@@ -138,11 +141,11 @@ export const ZooProvider = ({ children }) => {
       lastInteraction: null,
       lastFed: null,
       lastPlayed: null,
-      personality: '',        // new
-      animation: 'idle',      // new
-      status: 'idle',         // new
-      statusStartTime: null,  // new
-      statusEndTime: null,    // new
+      personality: '',        
+      animation: 'idle',      
+      status: 'idle',         
+      statusStartTime: null,  
+      statusEndTime: null,    
       lastCleaned: null,
       lastSlept: null,
       mood: 'happy',
@@ -165,11 +168,12 @@ export const ZooProvider = ({ children }) => {
       lastFed: null,
       lastPlayed: null,
       lastCleaned: null,
-      lastSlept: null,personality: '',        // new
-      animation: 'idle',      // new
-      status: 'idle',         // new
-      statusStartTime: null,  // new
-      statusEndTime: null,    // new
+      lastSlept: null,
+      personality: '',        
+      animation: 'idle',      
+      status: 'idle',         
+      statusStartTime: null,  
+      statusEndTime: null,    
       mood: 'happy',
       level: 1,
     },
@@ -184,19 +188,31 @@ export const ZooProvider = ({ children }) => {
         
         if (storedAnimals) {
           const parsed = JSON.parse(storedAnimals);
-          const merged = availableAnimals.map(base => {
-            const saved = parsed.find(p => p.id === base.id);
-            return saved
-              ? {
+          // If we have stored animals, we use them.
+          // Note: Logic here handles merging with availableAnimals for existing IDs,
+          // but for new Gacha animals, we just want to load them as is.
+          const merged = parsed.map(saved => {
+             // Check if it's one of the base animals
+             const base = availableAnimals.find(p => p.id === saved.id);
+             if (base) {
+                return {
                   ...base,
                   ...saved,
                   stats: { ...base.stats, ...saved.stats },
                   personality: saved.personality || getRandomPersonality(),
                   mood: saved.mood || 'happy',
-                }
-              : base;
+                };
+             }
+             // It's a gacha animal or other custom animal, return as is
+             return saved;
           });
-          setAnimals(merged);
+          
+          // If parsing result was empty or failed logic, fallback (safeguard)
+          if (merged.length === 0) {
+             setAnimals(availableAnimals);
+          } else {
+             setAnimals(merged);
+          }
         } else {
           setAnimals(availableAnimals);
         }
@@ -242,7 +258,7 @@ export const ZooProvider = ({ children }) => {
     setCoins(prevCoins => prevCoins + earnedCoins);
   }, [tasks]);
 
-  // Unlock an animal
+  // Unlock an animal (Legacy direct purchase)
   const unlockAnimal = (animalId) => {
     const animal = animals.find(a => a.id === animalId);
     
@@ -268,6 +284,55 @@ export const ZooProvider = ({ children }) => {
     }
     return false;
   };
+
+  // --- NEW: Buy Pack (Gacha System) ---
+  const buyPack = async (packId) => {
+    const pack = Object.values(PACK_TYPES).find(p => p.id === packId);
+    
+    if (!pack || coins < pack.cost) {
+      // alert("Not enough coins!"); // Handled by UI usually, but good safeguard
+      return null;
+    }
+  
+    // Deduct coins
+    setCoins(prev => prev - pack.cost);
+  
+    // Run the Gacha
+    const gachaResult = pullAnimal(packId);
+  
+    // Create the full animal object with stats initialized
+    const newAnimal = {
+      ...gachaResult, // Includes id, name, rarity, image, etc.
+      uniqueId: `${gachaResult.id}_${Date.now()}`, // Ensure unique ID for lists
+      unlocked: true,
+      stats: {
+        hunger: 100,
+        energy: 100,
+        happiness: 100,
+        hygiene: 100,
+        health: 100,
+      },
+      age: 0,
+      level: 1,
+      personality: getRandomPersonality(),
+      mood: 'happy',
+      animation: 'idle',
+      status: 'idle',
+      statusStartTime: null,
+      statusEndTime: null,
+      lastInteraction: new Date().toISOString(),
+      lastFed: new Date().toISOString(),
+      lastPlayed: new Date().toISOString(),
+      lastCleaned: new Date().toISOString(),
+      lastSlept: new Date().toISOString(),
+    };
+  
+    // Add to collection
+    setAnimals(prev => [...prev, newAnimal]);
+    
+    return newAnimal; 
+  };
+  // ------------------------------------
 
   // Feed an animal
   const feedAnimal = (animalId) => {
@@ -408,21 +473,19 @@ export const ZooProvider = ({ children }) => {
     return true;
   };
 
-  
   // Update animal stats and age over time
   useEffect(() => {
     const interval = setInterval(() => {
-      setAnimals(
-        animals.map(animal => {
+      setAnimals(currentAnimals => 
+        currentAnimals.map(animal => {
           if (animal.unlocked) {
             const now = new Date();
-            const newStats = { ...animal.stats };             // Check time since last interaction
+            const newStats = { ...animal.stats };             
             const lastInteraction = animal.lastInteraction ? new Date(animal.lastInteraction) : null;
             const hoursSinceInteraction = lastInteraction 
               ? (now   - lastInteraction) / (1000 * 60 * 60) 
               : 24;
             
-            // Decrease stats based on time
             // Set time-based behavior
             const hour = now.getHours();
             let sleepStart = 22;
@@ -474,25 +537,12 @@ export const ZooProvider = ({ children }) => {
               statusStartTime = now.toISOString();
               statusEndTime = new Date(now.getTime() + 30 * 60 * 1000).toISOString();
             }            
-            // Decrease hunger over time
-            if (hoursSinceInteraction > 2) {
-              newStats.hunger = Math.max(0, newStats.hunger - 5);
-            }
             
-            // Decrease energy over time when awake
-            if (hoursSinceInteraction > 3) {
-              newStats.energy = Math.max(0, newStats.energy - 3);
-            }
-            
-            // Decrease happiness over time
-            if (hoursSinceInteraction > 4) {
-              newStats.happiness = Math.max(0, newStats.happiness - 4);
-            }
-            
-            // Decrease hygiene over time
-            if (hoursSinceInteraction > 8) {
-              newStats.hygiene = Math.max(0, newStats.hygiene - 5);
-            }
+            // Decrease stats over time
+            if (hoursSinceInteraction > 2) newStats.hunger = Math.max(0, newStats.hunger - 5);
+            if (hoursSinceInteraction > 3) newStats.energy = Math.max(0, newStats.energy - 3);
+            if (hoursSinceInteraction > 4) newStats.happiness = Math.max(0, newStats.happiness - 4);
+            if (hoursSinceInteraction > 8) newStats.hygiene = Math.max(0, newStats.hygiene - 5);
             
             // Health affected by other stats
             if (newStats.hunger < 30 || newStats.energy < 20 || newStats.hygiene < 30) {
@@ -508,12 +558,13 @@ export const ZooProvider = ({ children }) => {
             
             const newAge = Math.max(animal.age, daysSinceUnlocked);
             
-            // Calculate level based on age and care
+            // Calculate level
             const avgStats = Object.values(newStats).reduce((sum, stat) => sum + stat, 0) / 5;
             const newLevel = Math.max(1, Math.floor(newAge / 5) + Math.floor(avgStats / 20));
             
-            // Update mood based on stats
+            // Update mood
             const newMood = updateAnimalMood({ stats: newStats });            
+            
             return { 
               ...animal,
               stats: newStats,
@@ -532,7 +583,7 @@ export const ZooProvider = ({ children }) => {
     }, 1000 * 60 * 10); // Update every 10 minutes
     
     return () => clearInterval(interval);
-  }, [animals]);
+  }, []); // Removed 'animals' from dependency to prevent infinite loops if setAnimals triggers effect
 
   return (
     <ZooContext.Provider
@@ -541,6 +592,7 @@ export const ZooProvider = ({ children }) => {
         coins,
         loading,
         unlockAnimal,
+        buyPack, // <--- Exported here
         feedAnimal,
         playWithAnimal,
         cleanAnimal,
